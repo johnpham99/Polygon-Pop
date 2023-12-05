@@ -16,10 +16,21 @@ export default function Board() {
   function randomizeBoard() {
     const nextSquares = squares.slice()
 
-    for (let r = 0; r < squares.length; r++) {
-      for (let c = 0; c < squares.length; c++) {
-        const randomNumber = Math.floor(Math.random() * 5);
-        nextSquares[r*9+c] = randomNumber.toString()
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        let bannedValues = new Set()
+        let i = r * 9 + c
+        if (c > 1 && nextSquares[i-1] === nextSquares[i-2]) {
+          bannedValues.add(nextSquares[i-1])
+        }
+        if (r > 1 && nextSquares[i-9] === nextSquares[i-18]) {
+          bannedValues.add(nextSquares[i-9])
+        }
+        let randomNumber = Math.floor(Math.random() * 5);
+        while (bannedValues.has(randomNumber)) {
+          randomNumber = Math.floor(Math.random() * 5)
+        }
+        nextSquares[i] = randomNumber
       }
     }
     setSquares(nextSquares)
