@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 
-function Square({value, onSquareClick}) {
-  return <button className="square" onClick = {onSquareClick}>
+function Square({value, onSquareClick, isSelected}) {
+  const squareStyle = isSelected ? { backgroundColor: 'yellow' } : {};
+  return <button className="square" style={squareStyle} onClick = {onSquareClick}>
     {value}
   </button>
 }
@@ -55,7 +56,7 @@ export default function Board() {
   }
 
   function renderSquare(i) {
-    return <Square value={squares[i]} onSquareClick={() => handleClick(i)} />
+    return <Square value={squares[i]} onSquareClick={() => handleClick(i)} isSelected={state === 1 && i === selectOne} />
   }
 
   function renderRow(row) {
