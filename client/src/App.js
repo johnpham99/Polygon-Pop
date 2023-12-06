@@ -8,6 +8,12 @@ function Square({value, onSquareClick}) {
 
 export default function Board() {
   const [squares, setSquares] = useState(Array(81).fill(null))
+
+  // 0 = no cell selected, 1 = 1st cell selected
+  const [state, setState] = useState(0) 
+
+  const [selectOne, setSelectOne] = useState(-1)
+  const [selectOneValue, setSelectOneValue] = useState(0)
   
   useEffect(() => {
     console.log("page launch")
@@ -20,8 +26,32 @@ export default function Board() {
 
   function handleClick(i) {
     const nextSquares = squares.slice()
-    nextSquares[i] = "X"
+    let selected = i;
+    if (state === 0) {
+      console.log("1st select: " + squares[i])
+      setSelectOne(i)
+      setSelectOneValue(squares[i])
+      setState(1)
+    } else if (state === 1) {
+      console.log("2nd select:")
+      if (selected === selectOne - 1 || selected === selectOne + 1 || selected === selectOne - 9 || selected === selectOne + 9) {
+        console.log("adjacent cell pressed")
+        nextSquares[selectOne] = nextSquares[selected]
+        nextSquares[selected] = selectOneValue
+        setState(0)
+        setSelectOne(-1)
+      }
+      if (selected === selectOne) {
+        console.log("same cell pressed")
+        nextSquares[i] = selectOneValue
+        setState(0)
+        setSelectOne(-1)
+      } else {
+        console.log("pressed invalid cell")
+      }
+    }
     setSquares(nextSquares)
+    console.log("now on state " + state);
   }
 
   function renderSquare(i) {
