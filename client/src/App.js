@@ -26,6 +26,7 @@ export default function Board() {
   }
 
   function handleClick(i) {
+    console.log("state is currently " + state)
     const nextSquares = squares.slice()
     let selected = i;
     if (state === 0) {
@@ -35,24 +36,55 @@ export default function Board() {
       setState(1)
     } else if (state === 1) {
       console.log("2nd select:")
-      if (selected === selectOne - 1 || selected === selectOne + 1 || selected === selectOne - 9 || selected === selectOne + 9) {
-        console.log("adjacent cell pressed")
-        nextSquares[selectOne] = nextSquares[selected]
-        nextSquares[selected] = selectOneValue
-        setState(0)
-        setSelectOne(-1)
-      }
-      if (selected === selectOne) {
-        console.log("same cell pressed")
-        nextSquares[i] = selectOneValue
-        setState(0)
-        setSelectOne(-1)
-      } else {
-        console.log("pressed invalid cell")
+      switch(true){
+        case selected === selectOne - 1:
+          console.log("adjacent cell pressed")
+          if (validMove(selectOne, "L", nextSquares)) {
+            nextSquares[selectOne] = nextSquares[selected]
+            nextSquares[selected] = selectOneValue
+            setState(0)
+            setSelectOne(-1)
+          } 
+          break;
+        case selected === selectOne + 1:
+          console.log("adjacent cell pressed")
+          if (validMove(selectOne, "R", nextSquares)) {
+            nextSquares[selectOne] = nextSquares[selected]
+            nextSquares[selected] = selectOneValue
+            setState(0)
+            setSelectOne(-1)
+          }
+          break;
+        case selected === selectOne - 9:
+          console.log("adjacent cell pressed")
+          if (validMove(selectOne, "U", nextSquares)) {
+            nextSquares[selectOne] = nextSquares[selected]
+            nextSquares[selected] = selectOneValue
+            setState(0)
+            setSelectOne(-1)
+          }
+          break;
+        case selected === selectOne + 9:
+          console.log("adjacent cell pressed")
+          if (validMove(selectOne, "D", nextSquares)) {
+            nextSquares[selectOne] = nextSquares[selected]
+            nextSquares[selected] = selectOneValue
+            setState(0)
+            setSelectOne(-1)
+          }
+          break;
+        case selected === selectOne:
+          console.log("same cell pressed")
+          nextSquares[i] = selectOneValue
+          setState(0)
+          setSelectOne(-1)
+          break;
+        default:
+          console.log("pressed invalid cell")
       }
     }
     setSquares(nextSquares)
-    console.log("now on state " + state);
+    console.log("now on current state is " + state);
   }
 
   function renderSquare(i) {
