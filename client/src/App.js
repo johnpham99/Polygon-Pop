@@ -44,6 +44,7 @@ export default function Board() {
             nextSquares[selected] = selectOneValue
             setState(0)
             setSelectOne(-1)
+            setSquares(clearMatches(selectOne, selectOne-1, nextSquares, "H"));
           } 
           break;
         case selected === selectOne + 1:
@@ -53,6 +54,7 @@ export default function Board() {
             nextSquares[selected] = selectOneValue
             setState(0)
             setSelectOne(-1)
+            setSquares(clearMatches(selectOne, selectOne-1, nextSquares, "H"));
           }
           break;
         case selected === selectOne - 9:
@@ -62,6 +64,7 @@ export default function Board() {
             nextSquares[selected] = selectOneValue
             setState(0)
             setSelectOne(-1)
+            clearMatches(selectOne, selectOne-9, nextSquares, "V");
           }
           break;
         case selected === selectOne + 9:
@@ -71,6 +74,7 @@ export default function Board() {
             nextSquares[selected] = selectOneValue
             setState(0)
             setSelectOne(-1)
+            clearMatches(selectOne, selectOne+9, nextSquares, "V");
           }
           break;
         case selected === selectOne:
@@ -107,7 +111,7 @@ export default function Board() {
 }
 
 
-/* Methods For Board Genration / Validation */
+/* Functions For Board Generation + Move Validation */
 
 function generateBoard() {
   console.log("generating a board")
@@ -245,6 +249,110 @@ export function validVerticalMatch(i, board) {
 export function validHorizontalMatch(i, board) {
   return (inBoard(i-1) && inBoard(i+1) && board[i] === board[i-1] && board[i] === board[i+1])    
 }
+
+/* Gameplay Functions */
+export function verticalClear(i, board) {
+  const newBoard = board.slice()
+  let clearedCells = new Set()
+  let u = i
+  let d = i
+  let sameUp = new Set()
+  let sameDown = new Set()
+  while (inBoard(u) && board[u] === board[i]) {
+    sameUp.add(u);
+    u -= 9
+  }
+  while (inBoard(d) && board[d] === board[i]) {
+    sameDown.add(d)
+    d += 9
+  }
+
+  if (d === i && validUpMatch()) sameUp.forEach(value => clearedCells.add(value))
+  else if (u === i && validDownMatch) sameDown.forEach(value => clearedCells.add(value))
+  else if (d - u >= 18) {
+    sameUp.forEach(value => clearedCells.add(value))
+    sameDown.forEach(value => clearedCells.add(value))
+  }
+  clearedCells.forEach(value => newBoard[value] = null)
+  // return clearedCells
+  return newBoard
+}
+
+export function clearMatches(a, b, board, direction) {
+  let clearedBoard = board.slice()
+  if (a > b) {
+    let temp = a
+    a = b
+    b = temp
+  }
+  switch(direction) {
+    case("H"):
+        let clearedCells = new Set()
+        let i = a
+        let j = a
+        let sameUp = new Set()
+        let sameDown = new Set()
+        while (inBoard(i) && board[i] === board[a]) {
+          sameUp.add(i)
+          i -= 9
+        }
+        while (inBoard(j) && board[j] === board[a]) {
+          sameDown.add(j)
+          j += 9
+        }
+
+        if (j === a && validUpMatch()) sameUp.forEach(value => clearedCells.add(value))
+        else if (i === a && validDownMatch) sameDown.forEach(value => clearedCells.add(value))
+        else if (j - i >= 18) {
+          sameUp.forEach(value => clearedCells.add(value))
+          sameDown.forEach(value => clearedCells.add(value))
+        }
+
+        if (validLeftMatch) {
+          i = a
+          while (inBoard(i) && board[i] === board[a]) {
+            sameUp.add(i)
+            i -= 1
+          }          
+        }
+
+        i = b
+        j = b
+        sameUp = new Set()
+        sameDown = new Set()
+        while (inBoard(i) && board[i] === board[b]) {
+          sameUp.add(i)
+          i -= 9
+        }
+        while (inBoard(j) && board[j] === board[b]) {
+          sameDown.add(j)
+          j += 9
+        }
+
+        if (j === b && validUpMatch()) sameUp.forEach(value => clearedCells.add(value))
+        else if (i === b && validDownMatch) sameDown.forEach(value => clearedCells.add(value))
+        else if (j - i >= 18) {
+          sameUp.forEach(value => clearedCells.add(value))
+          sameDown.forEach(value => clearedCells.add(value))
+        }
+
+        if (validRightMatch) {
+          i = b
+          while (inBoard(i) && board[i] === board[b]) {
+            sameUp.add(i)
+            i += 1
+          }          
+        }
+        clearedCells.forEach(value => clearedBoard[value] = "X")
+      break;
+    case("V"):
+      break;
+    default:
+      break;
+  }
+  return clearedBoard
+}
+
 
 
 /* Example Methods to Try with Jest Testing */
