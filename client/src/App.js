@@ -267,14 +267,35 @@ export function verticalClear(i, board) {
     d += 9
   }
 
-  if (d === i && validUpMatch()) sameUp.forEach(value => clearedCells.add(value))
-  else if (u === i && validDownMatch) sameDown.forEach(value => clearedCells.add(value))
-  else if (d - u >= 18) {
+  if (d - u >= 27) {
     sameUp.forEach(value => clearedCells.add(value))
     sameDown.forEach(value => clearedCells.add(value))
+    clearedCells.forEach(value => newBoard[value] = null)
   }
-  clearedCells.forEach(value => newBoard[value] = null)
-  // return clearedCells
+
+  return newBoard
+}
+
+export function horizontalClear(i, board) {
+  const newBoard = board.slice()
+  let clearedCells = new Set()
+  let l = i
+  let r = i
+  let sameLeft = new Set()
+  let sameRight = new Set()
+  while (inBoard(l) && board[l] === board[i]) {
+    sameLeft.add(l);
+    l -= 1
+  }
+  while (inBoard(r) && board[r] === board[i]) {
+    sameRight.add(r)
+    r += 1
+  }
+  if (r - l >= 3) {
+    sameLeft.forEach(value => clearedCells.add(value))
+    sameRight.forEach(value => clearedCells.add(value))
+    clearedCells.forEach(value => newBoard[value] = null)
+  }
   return newBoard
 }
 
