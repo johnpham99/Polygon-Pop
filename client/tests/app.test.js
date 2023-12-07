@@ -139,70 +139,37 @@ describe("1D Matches", () => {
       63, 64, 65, 66, 67, 68, 69, 70, 0, 
       72, 73, 74, 75, 76, 77, 78, 79, 0];
  
-   test('vertical clearing 1', () => {
-     expect(clearMatch(0, arr1)).toEqual(
-        [null, 1, 2, 3, 4, 5, 6, 7, 8,
-         null, 10, 11, 12, 0, 14, 15, 16, 17, 
-         null, 19, 20, 21, 0, 23, 24, 25, 26, 
-         27, 28, 29, 30, 0, 32, 33, 34, 35, 
-         36, 37, 38, 39, 0, 41, 42, 43, 44, 
-         45, 46, 47, 48, 0, 50, 51, 52, 53, 
-         54, 55, 56, 57, 0, 59, 60, 61, 0, 
-         63, 64, 65, 66, 67, 68, 69, 70, 0, 
-         72, 73, 74, 75, 76, 77, 78, 79, 0]);
-   });
- 
-   test('vertical clearing 2', () => {
-     expect(clearMatch(9, arr1)).toEqual(
-        [null, 1, 2, 3, 4, 5, 6, 7, 8,
-         null, 10, 11, 12, 0, 14, 15, 16, 17, 
-         null, 19, 20, 21, 0, 23, 24, 25, 26, 
-         27, 28, 29, 30, 0, 32, 33, 34, 35, 
-         36, 37, 38, 39, 0, 41, 42, 43, 44, 
-         45, 46, 47, 48, 0, 50, 51, 52, 53, 
-         54, 55, 56, 57, 0, 59, 60, 61, 0, 
-         63, 64, 65, 66, 67, 68, 69, 70, 0, 
-         72, 73, 74, 75, 76, 77, 78, 79, 0]);
-   });
- 
-   test('vertical clearing 3', () => {
-     expect(clearMatch(40, arr1)).toEqual(
-        [0, 1, 2, 3, 4, 5, 6, 7, 8,
-         0, 10, 11, 12, null, 14, 15, 16, 17, 
-         0, 19, 20, 21, null, 23, 24, 25, 26, 
-         27, 28, 29, 30, null, 32, 33, 34, 35, 
-         36, 37, 38, 39, null, 41, 42, 43, 44, 
-         45, 46, 47, 48, null, 50, 51, 52, 53, 
-         54, 55, 56, 57, null, 59, 60, 61, 0, 
-         63, 64, 65, 66, 67, 68, 69, 70, 0, 
-         72, 73, 74, 75, 76, 77, 78, 79, 0]);
-   });
- 
-   test('vertical clearing 4', () => {
-     expect(clearMatch(22, arr1)).toEqual(
-        [0, 1, 2, 3, 4, 5, 6, 7, 8,
-         0, 10, 11, 12, null, 14, 15, 16, 17, 
-         0, 19, 20, 21, null, 23, 24, 25, 26, 
-         27, 28, 29, 30, null, 32, 33, 34, 35, 
-         36, 37, 38, 39, null, 41, 42, 43, 44, 
-         45, 46, 47, 48, null, 50, 51, 52, 53, 
-         54, 55, 56, 57, null, 59, 60, 61, 0, 
-         63, 64, 65, 66, 67, 68, 69, 70, 0, 
-         72, 73, 74, 75, 76, 77, 78, 79, 0]);
-   });
- 
-   test('vertical clearing 5', () => {
-     expect(clearMatch(80, arr1)).toEqual(
-        [0, 1, 2, 3, 4, 5, 6, 7, 8,
-         0, 10, 11, 12, 0, 14, 15, 16, 17, 
-         0, 19, 20, 21, 0, 23, 24, 25, 26, 
-         27, 28, 29, 30, 0, 32, 33, 34, 35, 
-         36, 37, 38, 39, 0, 41, 42, 43, 44, 
-         45, 46, 47, 48, 0, 50, 51, 52, 53, 
-         54, 55, 56, 57, 0, 59, 60, 61, null, 
-         63, 64, 65, 66, 67, 68, 69, 70, null, 
-         72, 73, 74, 75, 76, 77, 78, 79, null]);
-   });
+    let clearedCells = new Set()
+
+    test('vertical clearing 1', () => {
+      const clearedCells = new Set();
+      clearMatch(0, arr1, clearedCells)
+      expect(clearedCells).toEqual(new Set([0,9,18])); 
+    });
+
+    test('vertical clearing 2', () => {
+      const clearedCells = new Set();
+      clearMatch(9, arr1, clearedCells)
+      expect(clearedCells).toEqual(new Set([0,9,18])); 
+    });
+
+    test('vertical clearing 3', () => {
+      const clearedCells = new Set();
+      clearMatch(40, arr1, clearedCells)
+      expect(clearedCells).toEqual(new Set([13,22,31,40,49,58])); 
+    });
+
+    test('vertical clearing 4', () => {
+      const clearedCells = new Set();
+      clearMatch(22, arr1, clearedCells)
+      expect(clearedCells).toEqual(new Set([13,22,31,40,49,58])); 
+    });
+
+    test('vertical clearing 5', () => {
+      const clearedCells = new Set();
+      clearMatch(80, arr1, clearedCells)
+      expect(clearedCells).toEqual(new Set([62,71,80])); 
+    });
   });
 
   describe("Horizontal Clears", () => {
@@ -226,109 +193,114 @@ describe("1D Matches", () => {
         63, 64, 65, 66, 67, 68, 69, 70, 71, 
         72, 73, 74, 75, 76, 77, 78, 79, 80]
 
-      test('horizontal clearing 1', () => {
-        expect(clearMatch(0,arr1)).toEqual(
-          [0, 1, 2, 0, 0, 0, 6, 7, 8,
-            9, 10, 11, 12, 13, 14, 15, 16, 17, 
-            18, 19, 20, 0, 22, 23, 24, 25, 26, 
-            27, 28, 29, 0, 31, 32, 33, 34, 35, 
-            36, 37, 38, 39, 40, 41, 42, 43, 44, 
-            45, 46, 47, 48, 39, 50, 51, 52, 53, 
-            54, 0, 0, 0, 0, 0, 0, 61, 62, 
-            63, 64, 65, 66, 67, 68, 69, 70, 0, 
-            72, 73, 74, 75, 76, 77, 0, 0, 0]);
-      });
+    test('horizontal clearing 1', () => {
+      const clearedCells = new Set();
+      clearMatch(0, arr1, clearedCells)
+      expect(clearedCells).toEqual(new Set([])); 
+    });
+    
+    test('horizontal clearing 2', () => {
+      const clearedCells = new Set();
+      clearMatch(3, arr1, clearedCells)
+      expect(clearedCells).toEqual(new Set([3,4,5])); 
+    });
 
-      test('horizontal clearing 2', () => {
-        expect(clearMatch(3,arr1)).toEqual(
-          [0, 1, 2, null, null, null, 6, 7, 8,
-            9, 10, 11, 12, 13, 14, 15, 16, 17, 
-            18, 19, 20, 0, 22, 23, 24, 25, 26, 
-            27, 28, 29, 0, 31, 32, 33, 34, 35, 
-            36, 37, 38, 39, 40, 41, 42, 43, 44, 
-            45, 46, 47, 48, 39, 50, 51, 52, 53, 
-            54, 0, 0, 0, 0, 0, 0, 61, 62, 
-            63, 64, 65, 66, 67, 68, 69, 70, 0, 
-            72, 73, 74, 75, 76, 77, 0, 0, 0]);
-      });
+    test('horizontal clearing 3', () => {
+      const clearedCells = new Set();
+      clearMatch(4, arr1, clearedCells)
+      expect(clearedCells).toEqual(new Set([3,4,5])); 
+    });
 
-      test('horizontal clearing 3', () => {
-        expect(clearMatch(4,arr1)).toEqual(
-          [0, 1, 2, null, null, null, 6, 7, 8,
-            9, 10, 11, 12, 13, 14, 15, 16, 17, 
-            18, 19, 20, 0, 22, 23, 24, 25, 26, 
-            27, 28, 29, 0, 31, 32, 33, 34, 35, 
-            36, 37, 38, 39, 40, 41, 42, 43, 44, 
-            45, 46, 47, 48, 39, 50, 51, 52, 53, 
-            54, 0, 0, 0, 0, 0, 0, 61, 62, 
-            63, 64, 65, 66, 67, 68, 69, 70, 0, 
-            72, 73, 74, 75, 76, 77, 0, 0, 0]);
-      });
+    test('horizontal clearing 4', () => {
+      const clearedCells = new Set();
+      clearMatch(80, arr1, clearedCells)
+      expect(clearedCells).toEqual(new Set([78,79,80])); 
+    });
 
-      test('horizontal clearing 4', () => {
-        expect(clearMatch(80,arr1)).toEqual(
-          [0, 1, 2, 0, 0, 0, 6, 7, 8,
-            9, 10, 11, 12, 13, 14, 15, 16, 17, 
-            18, 19, 20, 0, 22, 23, 24, 25, 26, 
-            27, 28, 29, 0, 31, 32, 33, 34, 35, 
-            36, 37, 38, 39, 40, 41, 42, 43, 44, 
-            45, 46, 47, 48, 39, 50, 51, 52, 53, 
-            54, 0, 0, 0, 0, 0, 0, 61, 62, 
-            63, 64, 65, 66, 67, 68, 69, 70, 0, 
-            72, 73, 74, 75, 76, 77, null, null, null]);
-      });
+    test('horizontal clearing 5', () => {
+      const clearedCells = new Set();
+      clearMatch(57, arr1, clearedCells)
+      expect(clearedCells).toEqual(new Set([55,56,57,58,59,60])); 
+    });
 
-      test('horizontal clearing 5', () => {
-        expect(clearMatch(57,arr1)).toEqual(
-          [0, 1, 2, 0, 0, 0, 6, 7, 8,
-            9, 10, 11, 12, 13, 14, 15, 16, 17, 
-            18, 19, 20, 0, 22, 23, 24, 25, 26, 
-            27, 28, 29, 0, 31, 32, 33, 34, 35, 
-            36, 37, 38, 39, 40, 41, 42, 43, 44, 
-            45, 46, 47, 48, 39, 50, 51, 52, 53, 
-            54, null, null, null, null, null, null, 61, 62, 
-            63, 64, 65, 66, 67, 68, 69, 70, 0, 
-            72, 73, 74, 75, 76, 77, 0, 0, 0]);
-      });
+    test('wrapping 1', () => {
+      const clearedCells = new Set();
+      clearMatch(16, arr2, clearedCells)
+      expect(clearedCells).toEqual(new Set([])); 
+    });
 
-      test('wrapping 1', () => {
-        expect(clearMatch(16,arr2)).toEqual(
-          [0, 1, 2, 3, 4, 5, 6, 7, 8,
-            9, 10, 11, 12, 13, 14, 15, 0, 0, 
-            0, 0, 0, 21, 22, 23, 24, 25, 26, 
-            27, 28, 29, 30, 31, 32, 33, 34, 35, 
-            36, 37, 38, 39, 40, 41, 42, 43, 44, 
-            45, 46, 47, 48, 49, 50, 51, 52, 53, 
-            54, 55, 56, 57, 58, 59, 60, 61, 62, 
-            63, 64, 65, 66, 67, 68, 69, 70, 71, 
-            72, 73, 74, 75, 76, 77, 78, 79, 80]);
-      });
+    test('wrapping 2', () => {
+      const clearedCells = new Set();
+      clearMatch(17, arr2, clearedCells)
+      expect(clearedCells).toEqual(new Set([])); 
+    });
 
-      test('wrapping 2', () => {
-        expect(clearMatch(17,arr2)).toEqual(
-          [0, 1, 2, 3, 4, 5, 6, 7, 8,
-            9, 10, 11, 12, 13, 14, 15, 0, 0, 
-            0, 0, 0, 21, 22, 23, 24, 25, 26, 
-            27, 28, 29, 30, 31, 32, 33, 34, 35, 
-            36, 37, 38, 39, 40, 41, 42, 43, 44, 
-            45, 46, 47, 48, 49, 50, 51, 52, 53, 
-            54, 55, 56, 57, 58, 59, 60, 61, 62, 
-            63, 64, 65, 66, 67, 68, 69, 70, 71, 
-            72, 73, 74, 75, 76, 77, 78, 79, 80]);
-      });
+    test('wrapping 3', () => {
+      const clearedCells = new Set();
+      clearMatch(18, arr2, clearedCells)
+      expect(clearedCells).toEqual(new Set([18,19,20])); 
+    });
+  });
 
-      test('wrapping 3', () => {
-        expect(clearMatch(18,arr2)).toEqual(
-          [0, 1, 2, 3, 4, 5, 6, 7, 8,
-            9, 10, 11, 12, 13, 14, 15, 0, 0, 
-            null, null, null, 21, 22, 23, 24, 25, 26, 
-            27, 28, 29, 30, 31, 32, 33, 34, 35, 
-            36, 37, 38, 39, 40, 41, 42, 43, 44, 
-            45, 46, 47, 48, 49, 50, 51, 52, 53, 
-            54, 55, 56, 57, 58, 59, 60, 61, 62, 
-            63, 64, 65, 66, 67, 68, 69, 70, 71, 
-            72, 73, 74, 75, 76, 77, 78, 79, 80]);
-      });
+});
+
+describe("2D Matches", () => {
+  let arr1 = [0, 0, 0, 3, 4, 5, 6, 7, 8,
+              0, 10, 11, 12, 0, 14, 15, 16, 17, 
+              0, 19, 20, 21, 0, 23, 24, 25, 26, 
+              27, 28, 29, 30, 0, 32, 33, 34, 35, 
+              36, 37, 38, 39, 0, 41, 42, 43, 44, 
+              45, 46, 47, 0, 0, 0, 0, 0, 0, 
+              54, 55, 56, 57, 0, 59, 60, 61, 0, 
+              63, 64, 65, 66, 67, 68, 69, 70, 0, 
+              72, 73, 74, 75, 76, 77, 78, 79, 0];
+
+  test('2D Clear 1', () => {
+    const clearedCells = new Set();
+    clearMatch(49, arr1, clearedCells)
+    expect(clearedCells).toEqual(new Set([13,22,31,40,49,58,48,50,51,52,53])); 
+  });
+
+  test('2D Clear 2', () => {
+    const clearedCells = new Set();
+    clearMatch(0, arr1, clearedCells)
+    expect(clearedCells).toEqual(new Set([0,1,2,9,18])); 
+  });
+
+  test('2D Clear 3', () => {
+    const clearedCells = new Set();
+    clearMatch(1, arr1, clearedCells)
+    expect(clearedCells).toEqual(new Set([0,1,2])); 
+  });
+
+  test('2D Clear 4', () => {
+    const clearedCells = new Set();
+    clearMatch(18, arr1, clearedCells)
+    expect(clearedCells).toEqual(new Set([0,9,18])); 
+  });
+
+  test('2D Clear 5', () => {
+    const clearedCells = new Set();
+    clearMatch(58, arr1, clearedCells)
+    expect(clearedCells).toEqual(new Set([58,49,40,31,22,13])); 
+  });
+
+  test('2D Clear 6', () => {
+    const clearedCells = new Set();
+    clearMatch(48, arr1, clearedCells)
+    expect(clearedCells).toEqual(new Set([48,49,50,51,52,53])); 
+  });
+
+  test('2D Clear 7', () => {
+    const clearedCells = new Set();
+    clearMatch(53, arr1, clearedCells)
+    expect(clearedCells).toEqual(new Set([48,49,50,51,52,53,62,71,80])); 
+  });
+
+  test('2D Clear 8', () => {
+    const clearedCells = new Set();
+    clearMatch(80, arr1, clearedCells)
+    expect(clearedCells).toEqual(new Set([80,71,62,53])); 
   });
 });
 

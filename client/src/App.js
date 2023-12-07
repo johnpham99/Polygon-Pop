@@ -252,9 +252,10 @@ export function validHorizontalMatch(i, board) {
 }
 
 /* Gameplay Functions */
-export function clearMatch(i, board) {
+
+export function clearMatch(i, board, clearedCells) {
+  if (clearedCells.has(i)) return
   const newBoard = board.slice()
-  let clearedCells = new Set()
   let u = i
   let d = i
   let l = i
@@ -294,132 +295,17 @@ export function clearMatch(i, board) {
     sameRight.forEach(value => clearedCells.add(value))
     clearedCells.forEach(value => newBoard[value] = null)
   }
-
-  return newBoard  
 }
 
-export function verticalClear(i, board) {
-  const newBoard = board.slice()
-  let clearedCells = new Set()
-  let u = i
-  let d = i
-  let sameUp = new Set()
-  let sameDown = new Set()
-  while (inBoard(u) && board[u] === board[i]) {
-    sameUp.add(u);
-    u -= 9
-  }
-  while (inBoard(d) && board[d] === board[i]) {
-    sameDown.add(d)
-    d += 9
-  }
-
-  if (d - u >= 27) {
-    sameUp.forEach(value => clearedCells.add(value))
-    sameDown.forEach(value => clearedCells.add(value))
-    clearedCells.forEach(value => newBoard[value] = null)
-  }
-
-  return newBoard
-}
-
-export function horizontalClear(i, board) {
-  const newBoard = board.slice()
-  let clearedCells = new Set()
-  let l = i
-  let r = i
-  let sameLeft = new Set()
-  let sameRight = new Set()
-  while (inBoard(l) && board[l] === board[i]) {
-    sameLeft.add(l);
-    if (l % 9 == 0) break;
-    l -= 1
-  }
-  while (inBoard(r) && board[r] === board[i]) {
-    sameRight.add(r)
-    if ((r + 1) % 9 == 0) break;
-    r += 1
-  }
-  if (r - l >= 3) {
-    sameLeft.forEach(value => clearedCells.add(value))
-    sameRight.forEach(value => clearedCells.add(value))
-    clearedCells.forEach(value => newBoard[value] = null)
-  }
-  return newBoard
-}
-
-export function clearMatches(a, b, board, direction) {
+export function clearMatches(board) {
   let clearedBoard = board.slice()
-  if (a > b) {
-    let temp = a
-    a = b
-    b = temp
+  let clearedCells = new Set()
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      clearMatch(i, board, clearedCells)
+    }
   }
-  switch(direction) {
-    case("H"):
-        let clearedCells = new Set()
-        let i = a
-        let j = a
-        let sameUp = new Set()
-        let sameDown = new Set()
-        while (inBoard(i) && board[i] === board[a]) {
-          sameUp.add(i)
-          i -= 9
-        }
-        while (inBoard(j) && board[j] === board[a]) {
-          sameDown.add(j)
-          j += 9
-        }
-
-        if (j === a && validUpMatch()) sameUp.forEach(value => clearedCells.add(value))
-        else if (i === a && validDownMatch) sameDown.forEach(value => clearedCells.add(value))
-        else if (j - i >= 18) {
-          sameUp.forEach(value => clearedCells.add(value))
-          sameDown.forEach(value => clearedCells.add(value))
-        }
-
-        if (validLeftMatch) {
-          i = a
-          while (inBoard(i) && board[i] === board[a]) {
-            sameUp.add(i)
-            i -= 1
-          }          
-        }
-
-        i = b
-        j = b
-        sameUp = new Set()
-        sameDown = new Set()
-        while (inBoard(i) && board[i] === board[b]) {
-          sameUp.add(i)
-          i -= 9
-        }
-        while (inBoard(j) && board[j] === board[b]) {
-          sameDown.add(j)
-          j += 9
-        }
-
-        if (j === b && validUpMatch()) sameUp.forEach(value => clearedCells.add(value))
-        else if (i === b && validDownMatch) sameDown.forEach(value => clearedCells.add(value))
-        else if (j - i >= 18) {
-          sameUp.forEach(value => clearedCells.add(value))
-          sameDown.forEach(value => clearedCells.add(value))
-        }
-
-        if (validRightMatch) {
-          i = b
-          while (inBoard(i) && board[i] === board[b]) {
-            sameUp.add(i)
-            i += 1
-          }          
-        }
-        clearedCells.forEach(value => clearedBoard[value] = "X")
-      break;
-    case("V"):
-      break;
-    default:
-      break;
-  }
+  clearedCells.forEach(value => clearedBoard[value] = null)
   return clearedBoard
 }
 
