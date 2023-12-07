@@ -226,6 +226,7 @@ export function inBoard(i) {
   return i >= 0 && i < 81
 }
 
+// technically there is a wrapping issue here....
 export function validLeftMatch(i, board) {
   return (inBoard(i-1) && inBoard(i-2) && board[i] === board[i-1] && board[i] === board[i-2])
 }
@@ -251,6 +252,52 @@ export function validHorizontalMatch(i, board) {
 }
 
 /* Gameplay Functions */
+export function clearMatch(i, board) {
+  const newBoard = board.slice()
+  let clearedCells = new Set()
+  let u = i
+  let d = i
+  let l = i
+  let r = i
+  let sameUp = new Set()
+  let sameDown = new Set()
+  let sameLeft = new Set()
+  let sameRight = new Set()
+
+  while (inBoard(u) && board[u] === board[i]) {
+    sameUp.add(u);
+    u -= 9
+  }
+  while (inBoard(d) && board[d] === board[i]) {
+    sameDown.add(d)
+    d += 9
+  }
+  while (inBoard(l) && board[l] === board[i]) {
+    sameLeft.add(l);
+    if (l % 9 == 0) break;
+    l -= 1
+  }
+  while (inBoard(r) && board[r] === board[i]) {
+    sameRight.add(r)
+    if ((r + 1) % 9 == 0) break;
+    r += 1
+  }
+
+  if (d - u >= 36) {
+    sameUp.forEach(value => clearedCells.add(value))
+    sameDown.forEach(value => clearedCells.add(value))
+    clearedCells.forEach(value => newBoard[value] = null)
+  }
+
+  if (r - l >= 3) {
+    sameLeft.forEach(value => clearedCells.add(value))
+    sameRight.forEach(value => clearedCells.add(value))
+    clearedCells.forEach(value => newBoard[value] = null)
+  }
+
+  return newBoard  
+}
+
 export function verticalClear(i, board) {
   const newBoard = board.slice()
   let clearedCells = new Set()
@@ -285,10 +332,12 @@ export function horizontalClear(i, board) {
   let sameRight = new Set()
   while (inBoard(l) && board[l] === board[i]) {
     sameLeft.add(l);
+    if (l % 9 == 0) break;
     l -= 1
   }
   while (inBoard(r) && board[r] === board[i]) {
     sameRight.add(r)
+    if ((r + 1) % 9 == 0) break;
     r += 1
   }
   if (r - l >= 3) {
