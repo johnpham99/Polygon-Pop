@@ -26,7 +26,6 @@ export default function Board() {
   }
 
   function handleClick(i) {
-    console.log("state is currently " + state)
     let nextSquares = squares.slice()
     let selected = i;
     if (state === 0) {
@@ -44,7 +43,8 @@ export default function Board() {
             nextSquares[selected] = selectOneValue
             setState(0)
             setSelectOne(-1)
-            nextSquares = clearAllMatches(nextSquares)
+            console.log("finishing move")
+            nextSquares = finishMove(nextSquares, selectOne, selected)
           } 
           break;
         case selected === selectOne + 1:
@@ -54,7 +54,8 @@ export default function Board() {
             nextSquares[selected] = selectOneValue
             setState(0)
             setSelectOne(-1)
-            nextSquares = clearAllMatches(nextSquares)
+            console.log("finishing move")
+            nextSquares = finishMove(nextSquares, selectOne, selected)
           }
           break;
         case selected === selectOne - 9:
@@ -64,7 +65,8 @@ export default function Board() {
             nextSquares[selected] = selectOneValue
             setState(0)
             setSelectOne(-1)
-            nextSquares = clearAllMatches(nextSquares)
+            console.log("finishing move")
+            nextSquares = finishMove(nextSquares, selectOne, selected)
           }
           break;
         case selected === selectOne + 9:
@@ -74,7 +76,8 @@ export default function Board() {
             nextSquares[selected] = selectOneValue
             setState(0)
             setSelectOne(-1)
-            nextSquares = clearAllMatches(nextSquares)
+            console.log("finishing move")
+            nextSquares = finishMove(nextSquares, selectOne, selected)
           }
           break;
         case selected === selectOne:
@@ -88,7 +91,6 @@ export default function Board() {
       }
     }
     setSquares(nextSquares)
-    console.log("now on current state is " + state);
   }
 
   function renderSquare(i) {
@@ -114,7 +116,6 @@ export default function Board() {
 /* Functions For Board Generation + Move Validation */
 
 function generateBoard() {
-  console.log("generating a board")
   const board = Array(81).fill(null)
 
   for (let r = 0; r < 9; r++) {
@@ -218,6 +219,7 @@ function validMove(i, direction, board) {
       if (validUpMatch(i,future)) return true
       break;
     default:
+
       break;
   }
 }
@@ -254,8 +256,11 @@ export function validHorizontalMatch(i, board) {
 /* Gameplay Functions */
 
 export function clearMatch(i, board, clearedCells) {
+  if (clearedCells === null) {
+    clearedCells = new Set()
+  }
   if (clearedCells.has(i)) return
-  const newBoard = board.slice()
+  let newBoard = board.slice()
   let u = i
   let d = i
   let l = i
@@ -301,21 +306,87 @@ export function clearMatch(i, board, clearedCells) {
     sameRight.forEach(value => clearedCells.add(value))
     clearedCells.forEach(value => newBoard[value] = null)
   }
+  clearedCells.forEach(value => newBoard[value] = null)
+  return newBoard
 }
 
-export function clearAllMatches(board) {
-  let clearedBoard = board.slice()
-  let clearedCells = new Set()
+export function cascade(board, emptyCells) {
+  let cascadedBoard = board.slice()
+  for (const index of emptyCells) {
+    if (!(cascadedBoard[index] === null)) continue;
+    let curr = index
+    while (inBoard(curr)) {
+      let search = curr
+      while (cascadedBoard[search] === null) {
+        search -= 9
+        if (!inBoard(search)) break;
+      }
+      if (!inBoard(search)) break
+      cascadedBoard[curr] = cascadedBoard[search]
+      cascadedBoard[search] = null
+      curr -= 9
+    }
+  }
+  return cascadedBoard
+}
+
+export function findAllMatches(board, clearedCells) {
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
       let i = r * 9 + c
       clearMatch(i, board, clearedCells)
     }
   }
+  return clearedCells
+}
+
+export function clearAllMatches(board, clearedCells) {
+  let clearedBoard = board.slice()
   clearedCells.forEach(value => clearedBoard[value] = null)
   return clearedBoard
 }
 
+export function fillIn(board) {
+  const filledBoard = board.slice()
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      let i = r * 9 + c
+      if (board[i] === null) {
+        let randomNumber = Math.floor(Math.random() * 5)
+        filledBoard[i] = randomNumber
+      }
+    }
+  }
+  return filledBoard
+}
+
+export function finishMove(board, selectOne, selected) {
+  let nextSquares = board.slice()
+  let clearedCells = new Set()
+  nextSquares = clearMatch(selectOne, nextSquares, clearedCells)
+  nextSquares = clearMatch(selected, nextSquares, clearedCells)
+  nextSquares = cascade(nextSquares, clearedCells)
+  nextSquares = fillIn(nextSquares)
+  
+  clearedCells.clear()
+  findAllMatches(nextSquares, clearedCells)
+  while (clearedCells.size > 0) {
+    console.log("cascade / generation resulted in match")
+    nextSquares = clearAllMatches(nextSquares, clearedCells)
+    nextSquares = cascade(nextSquares, clearedCells)
+    nextSquares = fillIn(nextSquares) 
+    clearedCells.clear() 
+    findAllMatches(nextSquares, clearedCells)
+  }
+
+  if (!validMoveExists(board)) {
+    nextSquares = generateValidBoard()
+  }
+
+  // another method would be to make it so fill in always results in an active move. however this could ruin the game as valid moves would be centered in one area
+  // some
+  return nextSquares
+}
 
 
 /* Example Methods to Try with Jest Testing */
