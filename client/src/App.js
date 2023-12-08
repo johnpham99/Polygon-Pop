@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import ScoreObject from './Score'
 
 function Square({value, onSquareClick, isSelected}) {
   const valueColors = {
@@ -9,11 +10,6 @@ function Square({value, onSquareClick, isSelected}) {
     4: '#9BF6FF',
   };
 
-  
-  // const squareStyle = {
-  //   backgroundColor: isSelected ? 'yellow' : valueColors[value] || 'white',
-  // };
-
   const squareStyle = {
     backgroundColor: valueColors[value] || 'white',
     border: isSelected ? '3px solid black' : '1px solid black', // Set border style and color
@@ -22,6 +18,10 @@ function Square({value, onSquareClick, isSelected}) {
   return <button className="square" style={squareStyle} onClick = {onSquareClick}>
     {/* {value} */}
   </button>
+}
+
+function Score({value}) {
+  return <div>Score: {value}</div>
 }
 
 export default function Board() {
@@ -52,6 +52,9 @@ export default function Board() {
    * @type {number}
    */
   const [selectOneValue, setSelectOneValue] = useState(-1)
+
+  const [score, setScore] = useState(0)
+  const scoreObject = new ScoreObject(score)
   
   useEffect(() => {
     console.log("page launch")
@@ -66,59 +69,71 @@ export default function Board() {
       setSelectOne(i)
       setSelectOneValue(squares[i])
       setState(1)
+      setSquares(nextSquares)
     } else if (state === 1) {
       nextSquares = startMove(nextSquares, selected, selectOne)
       setSquares(nextSquares) 
 
-      // Hacking way to delay rendering....
-      // Introduce a delay before calling finishMove
-      setTimeout(() => {
-        // This will allow the component to render before executing the next step
-        setSquares((prevSquares) => {
-          // Continue with the rest of the logic
-          nextSquares = finishMove(prevSquares, selectOne, selected);
-          return nextSquares;
-        });
-      }, 300); // You can adjust the delay time as needed
+      // // Hacking way to delay rendering....
+      // // Introduce a delay before calling finishMove
+      // setTimeout(() => {
+      //   // This will allow the component to render before executing the next step
+      //   setSquares((prevSquares) => {
+      //     // Continue with the rest of the logic
+      //     nextSquares = finishMove(prevSquares, selectOne, selected, scoreObject);
+      //     console.log("setting score to " + scoreObject.value)
+      //     setScore(Math.floor(scoreObject.value))
+      //     return nextSquares;
+      //   });
+      // }, 300); // You can adjust the delay time as needed
 
-      // nextSquares = finishMove(nextSquares, selectOne, selected)
+      nextSquares = finishMove(nextSquares, selectOne, selected, scoreObject)
+      console.log("setting score to " + scoreObject.value)
+      setScore(Math.floor(scoreObject.value))
+      setSquares(nextSquares)
     }
-    setSquares(nextSquares)
   }
 
+  /**
+   * Changes state of the game / the board after player selects second cell.
+   *
+   * @param {number[]} nextSquares - Current state of the board. 
+   * @param {number} selected - Index of player's second selected cell
+   * @param {number} selectOne - Index of player's first selected cell
+   * @returns {number[]} board after player selects second cell
+   */
   function startMove(nextSquares, selected, selectOne) {
-    console.log("2nd select:")
     switch(true){
       case selected === selectOne - 1:
-        console.log("adjacent cell pressed")
+        console.log("2nd select: adjacent cell pressed")
         if (validMove(selectOne, "L", nextSquares)) {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
         } 
         break;
       case selected === selectOne + 1:
-        console.log("adjacent cell pressed")
+        console.log("2nd select: adjacent cell pressed")
         if (validMove(selectOne, "R", nextSquares)) {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
         }
         break;
       case selected === selectOne - 9:
-        console.log("adjacent cell pressed")
+        console.log("2nd select: adjacent cell pressed")
         if (validMove(selectOne, "U", nextSquares)) {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
         }
         break;
       case selected === selectOne + 9:
-        console.log("adjacent cell pressed")
+        console.log("2nd select: adjacent cell pressed")
         if (validMove(selectOne, "D", nextSquares)) {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
         }
         break;
       case selected === selectOne:
-        console.log("same cell pressed")
+        console.log("2nd select: same cell pressed")
         nextSquares[selected] = selectOneValue
         break;
       default:
@@ -145,6 +160,7 @@ export default function Board() {
   return(
     <>
       {[0,1,2,3,4,5,6,7,8].map((row) => renderRow(row))}
+      <Score value={score}/>
     </>
   );
 }
@@ -504,14 +520,20 @@ export function fillIn(board) {
  * @returns {Set} Set that contains the indices of the null spaces.
  * @see clearAllMatches()
  */
-export function findAllMatches(board) {
+export function findAllMatches(board, scoreObject) {
   let clearedCells = new Set()
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
       let i = r * 9 + c
-      clearMatch(i, board, clearedCells)
+      clearMatch(i, board, clearedCells, null)
     }
   }
+  // if (clearedCells.size > 0) {
+  //   scoreObject.value += clearedCells.size
+  //   console.log("More matching remaining! Cascade + Fill resulted in " + clearedCells.size + " new cleared cells") 
+  //   console.log("New Score: " + scoreObject.value)
+  // }
+
   return clearedCells
 }
 
@@ -539,22 +561,31 @@ export function clearAllMatches(board, clearedCells) {
  * @param {number} selected - Index of player's second selected cell
  * @returns {number[]} stable board after player makes valid swap 
  */
-export function finishMove(board, selectOne, selected) {
-  console.log("finishing move")
+export function finishMove(board, selectOne, selected, scoreObject) {
   let nextSquares = board.slice()
   let clearedCells = new Set()
+
   nextSquares = clearMatch(selectOne, nextSquares, clearedCells)
   nextSquares = clearMatch(selected, nextSquares, clearedCells)
+
+
+  console.log("Current score: " + scoreObject.value)
+  console.log("You cleared " + clearedCells.size + " cells with that swap!")
+  scoreObject.value += clearedCells.size
+  console.log("New Score: " + scoreObject.value)
+
+  console.log("cascading and filling in")
   nextSquares = cascade(nextSquares, clearedCells)
   nextSquares = fillIn(nextSquares)
   
-  clearedCells = findAllMatches(nextSquares, clearedCells)
+  clearedCells = findAllMatches(nextSquares, scoreObject)
   while (clearedCells.size > 0) {
-    console.log("cascade / generation resulted in match")
+    console.log("cascade / fill resulted in match")
     nextSquares = clearAllMatches(nextSquares, clearedCells)
+    console.log("cascading and filling in")
     nextSquares = cascade(nextSquares, clearedCells)
     nextSquares = fillIn(nextSquares) 
-    clearedCells = findAllMatches(nextSquares, clearedCells)
+    clearedCells = findAllMatches(nextSquares, scoreObject)
   }
 
   if (!validMoveExists(board)) {
