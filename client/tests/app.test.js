@@ -2,7 +2,7 @@ import React from 'react';
 import { render, renderHook, act } from '@testing-library/react';
 import {add, useExampleHook, validMoveExists, inBoard} from '../src/App';
 import {validLeftMatch, validRightMatch, validUpMatch, validDownMatch, validVerticalMatch, validHorizontalMatch} from '../src/App';  
-import {verticalClear, horizontalClear, clearMatch} from '../src/App';  
+import {verticalClear, horizontalClear, clearMatch, clearAllMatches} from '../src/App';  
 
 /* Example Test Cases to use with Jest Testing */
 
@@ -304,3 +304,28 @@ describe("2D Matches", () => {
   });
 });
 
+describe('Board clearing', () => {
+  let arr1 = [0, 0, 0, 3, 4, 5, 6, 7, 8,
+    0, 10, 11, 12, 0, 14, 15, 16, 17, 
+    0, 19, 20, 21, 0, 23, 24, 25, 26, 
+    27, 28, 29, 30, 0, 32, 33, 34, 35, 
+    36, 37, 38, 39, 0, 41, 42, 43, 44, 
+    45, 46, 47, 0, 0, 0, 0, 0, 0, 
+    54, 55, 56, 57, 0, 59, 60, 61, 0, 
+    63, 64, 65, 66, 67, 68, 69, 70, 0, 
+    72, 73, 74, 75, 76, 77, 78, 79, 0];
+
+    test('clear all matches', () => {
+      expect(clearAllMatches(arr1)).toEqual(
+        [null, null, null, 3, 4, 5, 6, 7, 8,
+          null, 10, 11, 12, null, 14, 15, 16, 17, 
+          null, 19, 20, 21, null, 23, 24, 25, 26, 
+          27, 28, 29, 30, null, 32, 33, 34, 35, 
+          36, 37, 38, 39, null, 41, 42, 43, 44, 
+          45, 46, 47, null, null, null, null, null, null, 
+          54, 55, 56, 57, null, 59, 60, 61, null, 
+          63, 64, 65, 66, 67, 68, 69, 70, null, 
+          72, 73, 74, 75, 76, 77, 78, 79, null]
+      )
+    })
+})

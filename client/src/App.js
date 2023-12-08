@@ -27,7 +27,7 @@ export default function Board() {
 
   function handleClick(i) {
     console.log("state is currently " + state)
-    const nextSquares = squares.slice()
+    let nextSquares = squares.slice()
     let selected = i;
     if (state === 0) {
       console.log("1st select: " + squares[i])
@@ -44,7 +44,7 @@ export default function Board() {
             nextSquares[selected] = selectOneValue
             setState(0)
             setSelectOne(-1)
-            setSquares(clearMatches(selectOne, selectOne-1, nextSquares, "H"));
+            nextSquares = clearAllMatches(nextSquares)
           } 
           break;
         case selected === selectOne + 1:
@@ -54,7 +54,7 @@ export default function Board() {
             nextSquares[selected] = selectOneValue
             setState(0)
             setSelectOne(-1)
-            setSquares(clearMatches(selectOne, selectOne-1, nextSquares, "H"));
+            nextSquares = clearAllMatches(nextSquares)
           }
           break;
         case selected === selectOne - 9:
@@ -64,7 +64,7 @@ export default function Board() {
             nextSquares[selected] = selectOneValue
             setState(0)
             setSelectOne(-1)
-            clearMatches(selectOne, selectOne-9, nextSquares, "V");
+            nextSquares = clearAllMatches(nextSquares)
           }
           break;
         case selected === selectOne + 9:
@@ -74,7 +74,7 @@ export default function Board() {
             nextSquares[selected] = selectOneValue
             setState(0)
             setSelectOne(-1)
-            clearMatches(selectOne, selectOne+9, nextSquares, "V");
+            nextSquares = clearAllMatches(nextSquares)
           }
           break;
         case selected === selectOne:
@@ -275,12 +275,18 @@ export function clearMatch(i, board, clearedCells) {
   }
   while (inBoard(l) && board[l] === board[i]) {
     sameLeft.add(l);
-    if (l % 9 == 0) break;
+    if (l % 9 === 0) {
+      l -= 1
+      break
+    }
     l -= 1
   }
   while (inBoard(r) && board[r] === board[i]) {
     sameRight.add(r)
-    if ((r + 1) % 9 == 0) break;
+    if ((r + 1) % 9 === 0) {
+      r += 1 
+      break
+    }
     r += 1
   }
 
@@ -290,18 +296,19 @@ export function clearMatch(i, board, clearedCells) {
     clearedCells.forEach(value => newBoard[value] = null)
   }
 
-  if (r - l >= 3) {
+  if (r - l >= 4) {
     sameLeft.forEach(value => clearedCells.add(value))
     sameRight.forEach(value => clearedCells.add(value))
     clearedCells.forEach(value => newBoard[value] = null)
   }
 }
 
-export function clearMatches(board) {
+export function clearAllMatches(board) {
   let clearedBoard = board.slice()
   let clearedCells = new Set()
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
+      let i = r * 9 + c
       clearMatch(i, board, clearedCells)
     }
   }
