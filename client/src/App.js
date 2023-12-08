@@ -1,9 +1,21 @@
 import { useEffect, useState } from 'react'
 
 function Square({value, onSquareClick, isSelected}) {
-  const squareStyle = isSelected ? { backgroundColor: 'yellow' } : {};
+  const valueColors = {
+    0: '#FFADAD',
+    1: '#FFD6A5',
+    2: '#FDFFB6',
+    3: '#CAFFBF',
+    4: '#9BF6FF',
+  };
+
+  
+  const squareStyle = {
+    backgroundColor: isSelected ? 'yellow' : valueColors[value] || 'white',
+  };
+
   return <button className="square" style={squareStyle} onClick = {onSquareClick}>
-    {value}
+    {/* {value} */}
   </button>
 }
 
