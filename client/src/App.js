@@ -52,6 +52,7 @@ export default function Board() {
    * @type {number}
    */
   const [selectOneValue, setSelectOneValue] = useState(-1)
+  const [selectTwo, setSelectTwo] = useState(-1)
   const [score, setScore] = useState(0)
   const scoreObject = new ScoreObject(score)
   
@@ -73,25 +74,32 @@ export default function Board() {
       nextSquares = startMove(nextSquares, selected, selectOne)
       setSquares(nextSquares) 
 
-      // // Hacking way to delay rendering....
-      // // Introduce a delay before calling finishMove
-      // setTimeout(() => {
-      //   // This will allow the component to render before executing the next step
-      //   setSquares((prevSquares) => {
-      //     // Continue with the rest of the logic
-      //     nextSquares = finishMove(prevSquares, selectOne, selected, scoreObject);
-      //     console.log("setting score to " + scoreObject.value)
-      //     setScore(Math.floor(scoreObject.value))
-      //     return nextSquares;
-      //   });
-      // }, 300); // You can adjust the delay time as needed
-
-      nextSquares = finishMove(nextSquares, selectOne, selected, scoreObject)
-      console.log("setting score to " + scoreObject.value)
-      setScore(Math.floor(scoreObject.value))
-      setSquares(nextSquares)
+      // nextSquares = finishMove(nextSquares, selectOne, selected, scoreObject)
+      // console.log("setting score to " + scoreObject.value)
+      // setScore(scoreObject.value)
+      // setSquares(nextSquares)
     }
   }
+
+  useEffect(() => {
+    // Your logic here
+    if (selectOne !== -1 && selectTwo !== -1) {
+      const delayedLogic = () => {
+        const nextSquares = finishMove(squares, selectOne, selectTwo, scoreObject);
+        console.log("setting score to " + scoreObject.value);
+        setScore(Math.floor(scoreObject.value));
+        setSelectTwo(-1);
+        setSquares(nextSquares);
+      };
+
+      // Introduce a delay of 300 milliseconds (adjust as needed)
+      const delayTime = 300;
+      const delayId = setTimeout(delayedLogic, delayTime);
+
+      // Cleanup function to clear the timeout if the component unmounts or dependencies change
+      return () => clearTimeout(delayId);
+    }
+  }, [squares, selectOne, selectTwo, scoreObject]);
 
   /**
    * Changes state of the game / the board after player selects second cell.
@@ -108,6 +116,7 @@ export default function Board() {
         if (validMove(selectOne, "L", nextSquares)) {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
+          setSelectTwo(selected)
         } 
         break;
       case selected === selectOne + 1:
@@ -115,6 +124,7 @@ export default function Board() {
         if (validMove(selectOne, "R", nextSquares)) {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
+          setSelectTwo(selected)
         }
         break;
       case selected === selectOne - 9:
@@ -122,6 +132,7 @@ export default function Board() {
         if (validMove(selectOne, "U", nextSquares)) {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
+          setSelectTwo(selected)
         }
         break;
       case selected === selectOne + 9:
@@ -129,6 +140,7 @@ export default function Board() {
         if (validMove(selectOne, "D", nextSquares)) {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
+          setSelectTwo(selected)
         }
         break;
       case selected === selectOne:
@@ -573,15 +585,12 @@ export function finishMove(board, selectOne, selected, scoreObject) {
   scoreObject.value += clearedCells.size
   console.log("New Score: " + scoreObject.value)
 
-  console.log("cascading and filling in")
   nextSquares = cascade(nextSquares, clearedCells)
   nextSquares = fillIn(nextSquares)
   
   clearedCells = findAllMatches(nextSquares, scoreObject)
   while (clearedCells.size > 0) {
-    console.log("cascade / fill resulted in match")
     nextSquares = clearAllMatches(nextSquares, clearedCells)
-    console.log("cascading and filling in")
     nextSquares = cascade(nextSquares, clearedCells)
     nextSquares = fillIn(nextSquares) 
     clearedCells = findAllMatches(nextSquares, scoreObject)
