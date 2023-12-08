@@ -10,8 +10,13 @@ function Square({value, onSquareClick, isSelected}) {
   };
 
   
+  // const squareStyle = {
+  //   backgroundColor: isSelected ? 'yellow' : valueColors[value] || 'white',
+  // };
+
   const squareStyle = {
-    backgroundColor: isSelected ? 'yellow' : valueColors[value] || 'white',
+    backgroundColor: valueColors[value] || 'white',
+    border: isSelected ? '3px solid black' : '1px solid black', // Set border style and color
   };
 
   return <button className="square" style={squareStyle} onClick = {onSquareClick}>
