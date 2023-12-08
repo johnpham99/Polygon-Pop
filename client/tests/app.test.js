@@ -1,44 +1,8 @@
 import React from 'react';
 import { render, renderHook, act } from '@testing-library/react';
-import {add, useExampleHook, validMoveExists, inBoard} from '../src/App';
+import {validMoveExists, inBoard} from '../src/App';
 import {validLeftMatch, validRightMatch, validUpMatch, validDownMatch, validVerticalMatch, validHorizontalMatch} from '../src/App';  
-import {verticalClear, horizontalClear, clearMatch, clearAllMatches} from '../src/App';  
-
-/* Example Test Cases to use with Jest Testing */
-
-// test('add function adds two numbers correctly', () => {
-//   // Arrange
-//   const a = 2;
-//   const b = 3;
-
-//   // Act
-//   const result = add(a, b);
-
-//   // Assert
-//   expect(result).toBe(5);
-// });
-
-
-// test('useExampleHook increments the value correctly', () => {
-//   // Arrange
-//   let hookResult;
-
-//   // Act
-//   renderHook(() => {
-//     hookResult = useExampleHook(0);
-//   });
-
-//   // Assert initial state
-//   expect(hookResult.value).toBe(0);
-
-//   // Act again to trigger the useEffect
-//   act(() => {
-//     hookResult.increment();
-//   });
-
-//   // Assert updated state after increment
-//   expect(hookResult.value).toBe(1);
-// });
+import {clearMatch, findAllMatches, clearAllMatches} from '../src/App';  
 
 describe('Validity of Indices', () => {
   describe('Out of bounds', () => {
@@ -316,7 +280,8 @@ describe('Board clearing', () => {
     72, 73, 74, 75, 76, 77, 78, 79, 0];
 
     test('clear all matches', () => {
-      expect(clearAllMatches(arr1)).toEqual(
+      let clearedCells = findAllMatches(arr1)
+      expect(clearAllMatches(arr1, clearedCells)).toEqual(
         [null, null, null, 3, 4, 5, 6, 7, 8,
           null, 10, 11, 12, null, 14, 15, 16, 17, 
           null, 19, 20, 21, null, 23, 24, 25, 26, 
@@ -329,3 +294,39 @@ describe('Board clearing', () => {
       )
     })
 })
+
+/* ----------------------------------  Example Test Cases w/ Example Functions  ---------------------------------- */
+
+// test('add function adds two numbers correctly', () => {
+//   // Arrange
+//   const a = 2;
+//   const b = 3;
+
+//   // Act
+//   const result = add(a, b);
+
+//   // Assert
+//   expect(result).toBe(5);
+// });
+
+
+// test('useExampleHook increments the value correctly', () => {
+//   // Arrange
+//   let hookResult;
+
+//   // Act
+//   renderHook(() => {
+//     hookResult = useExampleHook(0);
+//   });
+
+//   // Assert initial state
+//   expect(hookResult.value).toBe(0);
+
+//   // Act again to trigger the useEffect
+//   act(() => {
+//     hookResult.increment();
+//   });
+
+//   // Assert updated state after increment
+//   expect(hookResult.value).toBe(1);
+// });
