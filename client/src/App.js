@@ -52,7 +52,6 @@ export default function Board() {
    * @type {number}
    */
   const [selectOneValue, setSelectOneValue] = useState(-1)
-
   const [score, setScore] = useState(0)
   const scoreObject = new ScoreObject(score)
   
@@ -146,7 +145,7 @@ export default function Board() {
   }
 
   function renderSquare(i) {
-    return <Square value={squares[i]} onSquareClick={() => handleClick(i)} isSelected={state === 1 && i === selectOne} />
+    return <Square key={i} value={squares[i]} onSquareClick={() => handleClick(i)} isSelected={state === 1 && i === selectOne} />
   }
 
   function renderRow(row) {
