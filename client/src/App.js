@@ -24,6 +24,7 @@ export default function Board() {
 
   /**
    * Holds the index of the player's 1st selected cell
+   * Value of -1 means player has not selected a cell yet.
    * @type {number}
    * @see {}
    */
@@ -49,63 +50,67 @@ export default function Board() {
       setSelectOneValue(squares[i])
       setState(1)
     } else if (state === 1) {
-      console.log("2nd select:")
-      switch(true){
-        case selected === selectOne - 1:
-          console.log("adjacent cell pressed")
-          if (validMove(selectOne, "L", nextSquares)) {
-            nextSquares[selectOne] = nextSquares[selected]
-            nextSquares[selected] = selectOneValue
-            setState(0)
-            setSelectOne(-1)
-            console.log("finishing move")
-            nextSquares = finishMove(nextSquares, selectOne, selected)
-          } 
-          break;
-        case selected === selectOne + 1:
-          console.log("adjacent cell pressed")
-          if (validMove(selectOne, "R", nextSquares)) {
-            nextSquares[selectOne] = nextSquares[selected]
-            nextSquares[selected] = selectOneValue
-            setState(0)
-            setSelectOne(-1)
-            console.log("finishing move")
-            nextSquares = finishMove(nextSquares, selectOne, selected)
-          }
-          break;
-        case selected === selectOne - 9:
-          console.log("adjacent cell pressed")
-          if (validMove(selectOne, "U", nextSquares)) {
-            nextSquares[selectOne] = nextSquares[selected]
-            nextSquares[selected] = selectOneValue
-            setState(0)
-            setSelectOne(-1)
-            console.log("finishing move")
-            nextSquares = finishMove(nextSquares, selectOne, selected)
-          }
-          break;
-        case selected === selectOne + 9:
-          console.log("adjacent cell pressed")
-          if (validMove(selectOne, "D", nextSquares)) {
-            nextSquares[selectOne] = nextSquares[selected]
-            nextSquares[selected] = selectOneValue
-            setState(0)
-            setSelectOne(-1)
-            console.log("finishing move")
-            nextSquares = finishMove(nextSquares, selectOne, selected)
-          }
-          break;
-        case selected === selectOne:
-          console.log("same cell pressed")
-          nextSquares[i] = selectOneValue
-          setState(0)
-          setSelectOne(-1)
-          break;
-        default:
-          console.log("pressed invalid cell")
-      }
+      nextSquares = startMove(nextSquares, selected, selectOne)
+      setSquares(nextSquares) 
+
+      // Hacking way to delay rendering....
+      // Introduce a delay before calling finishMove
+      setTimeout(() => {
+        // This will allow the component to render before executing the next step
+        setSquares((prevSquares) => {
+          // Continue with the rest of the logic
+          nextSquares = finishMove(prevSquares, selectOne, selected);
+          return nextSquares;
+        });
+      }, 300); // You can adjust the delay time as needed
+
+      // nextSquares = finishMove(nextSquares, selectOne, selected)
     }
     setSquares(nextSquares)
+  }
+
+  function startMove(nextSquares, selected, selectOne) {
+    console.log("2nd select:")
+    switch(true){
+      case selected === selectOne - 1:
+        console.log("adjacent cell pressed")
+        if (validMove(selectOne, "L", nextSquares)) {
+          nextSquares[selectOne] = nextSquares[selected]
+          nextSquares[selected] = selectOneValue
+        } 
+        break;
+      case selected === selectOne + 1:
+        console.log("adjacent cell pressed")
+        if (validMove(selectOne, "R", nextSquares)) {
+          nextSquares[selectOne] = nextSquares[selected]
+          nextSquares[selected] = selectOneValue
+        }
+        break;
+      case selected === selectOne - 9:
+        console.log("adjacent cell pressed")
+        if (validMove(selectOne, "U", nextSquares)) {
+          nextSquares[selectOne] = nextSquares[selected]
+          nextSquares[selected] = selectOneValue
+        }
+        break;
+      case selected === selectOne + 9:
+        console.log("adjacent cell pressed")
+        if (validMove(selectOne, "D", nextSquares)) {
+          nextSquares[selectOne] = nextSquares[selected]
+          nextSquares[selected] = selectOneValue
+        }
+        break;
+      case selected === selectOne:
+        console.log("same cell pressed")
+        nextSquares[selected] = selectOneValue
+        break;
+      default:
+        console.log("pressed invalid cell")
+        return nextSquares
+    }
+    setState(0)
+    setSelectOneValue(-1)
+    return nextSquares
   }
 
   function renderSquare(i) {
@@ -508,7 +513,7 @@ export function clearAllMatches(board, clearedCells) {
 }
 
 /**
- * Brings the board to a stable state (no active matches) after player does a valid swap. 
+ * Brings the board to a stable state (no active matches). Typically after player does a valid swap. 
  * Clear Matches / Make Cells Null -> Cascade -> Fill In Empty Spaces -> Clear Active Matches, Cascade, and Fill In until there is no active matches (stable)
  * Regenerates board if stable state does not have a valid move.
  *
@@ -518,6 +523,7 @@ export function clearAllMatches(board, clearedCells) {
  * @returns {number[]} stable board after player makes valid swap 
  */
 export function finishMove(board, selectOne, selected) {
+  console.log("finishing move")
   let nextSquares = board.slice()
   let clearedCells = new Set()
   nextSquares = clearMatch(selectOne, nextSquares, clearedCells)
