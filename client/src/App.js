@@ -8,22 +8,37 @@ function Square({value, onSquareClick, isSelected}) {
 }
 
 export default function Board() {
+  /**
+   * 1D Array that keeps track of the values of all squares.
+   * Note: Currently, boards are all squares, so an array of size 81 is 9x9 board.
+   * @type {number[]}
+   */
   const [squares, setSquares] = useState(Array(81).fill(null))
 
-  // 0 = no cell selected, 1 = 1st cell selected
+  /**
+   * 0 = Player has no cell selected
+   * 1 = 1st Cell is Selected
+   * @type {number}
+   */
   const [state, setState] = useState(0) 
 
+  /**
+   * Holds the index of the player's 1st selected cell
+   * @type {number}
+   * @see {}
+   */
   const [selectOne, setSelectOne] = useState(-1)
-  const [selectOneValue, setSelectOneValue] = useState(0)
+
+  /**
+   * Holds the value of the player's 1st selected cell
+   * @type {number}
+   */
+  const [selectOneValue, setSelectOneValue] = useState(-1)
   
   useEffect(() => {
     console.log("page launch")
-    setValidSquares(); 
+    setSquares(generateValidBoard())
   }, []); 
-
-  function setValidSquares() {
-    setSquares(generateValidBoard());
-  }
 
   function handleClick(i) {
     let nextSquares = squares.slice()
@@ -113,8 +128,16 @@ export default function Board() {
 }
 
 
-/* Functions For Board Generation + Move Validation */
+/* ----------------------------------  Functions For Board Generation + Move Validation ---------------------------------- */
 
+/**
+ * Generates a board (1D array of size 81) with random numbers [1-5].
+ * This function makes sures that there are no matches (3 or more straight vertically/horizontally adjacent cells with the same value).
+ * Note: Array size and value range is currently hardcoded. In the future, I plan on making these values player customizable.
+ *
+ * @returns {number[]} Random 1D Array of size 81 with random numbers [1-5]
+ * @see generateValidBoard()
+ */
 function generateBoard() {
   const board = Array(81).fill(null)
 
@@ -138,6 +161,13 @@ function generateBoard() {
   return board;
 }
 
+/**
+ * Generates a valid board.
+ * Valid board means there is at least one move (swapping of 2 adjacent cells) that makes a match.
+ *
+ * @returns {number[]} Random valid 1D Array of size 81 with random numbers [1-5]
+ * @see validMoveExists()
+ */
 function generateValidBoard() {
   console.log("generating a valid board")
   let randomBoard = generateBoard()
@@ -147,6 +177,14 @@ function generateValidBoard() {
   return randomBoard
 }
 
+/**
+ * Determines if there is a valid move on the board. A move is when a player swaps two directly adjacent cells.
+ * A move is valid if it results in a match.
+ *
+ * @param {number[]} board - Current board state
+ * @returns {boolean} True if there are no 3 straight vertically/horizontally adjacent cells with the same value
+ * @see validMove()
+ */
 export function validMoveExists(board) {
   console.log("checking if valid move exists")
   for (let r = 0; r < 9; r++) {
@@ -158,6 +196,14 @@ export function validMoveExists(board) {
   return false;
 }
 
+/**
+ * Determines if a move is valid. A move is being represented as a cell and direction of cell that it is being swapped with.
+ *
+ * @param {number} i - index of player's first selected cell
+ * @param {String} direction - where player is trying to move/swap selected cell ("L" = left, "R" = right, "U" = up, "D" = down)
+ * @param {number[]} - current state of the board
+ * @returns {boolean} true if given move is valid
+ */
 function validMove(i, direction, board) {
   const future = board.slice()
   const curr = future[i]
@@ -219,43 +265,111 @@ function validMove(i, direction, board) {
       if (validUpMatch(i,future)) return true
       break;
     default:
-
       break;
   }
 }
 
+/**
+ * Determines if given index is a valid index with current board.
+ * Note: Board is currently hardcoded as an array of 81 (9x9).
+ *
+ * @param {number} i - given index
+ * @returns {boolean} true if index is within bounds
+ */
 export function inBoard(i) {
   return i >= 0 && i < 81
 }
 
-// technically there is a wrapping issue here....
+/**
+ * Determines if cell and it's two left neighbors are the same value.
+ * BUG: Currently not checking for wrapping. If beginning of one row and last two of previous row are the same value, should return false.
+ * Note: Wrapping is currently being handled in validMove()
+ *
+ * @param {number} i - given index
+ * @param {number[]} board - current state of board 
+ * @returns {boolean} true if cell and it's 2 left neighbors are the same value
+ * @see validMove()
+ */
 export function validLeftMatch(i, board) {
   return (inBoard(i-1) && inBoard(i-2) && board[i] === board[i-1] && board[i] === board[i-2])
 }
 
+/**
+ * Determines if cell and it's two right neighbors are the same value.
+ * BUG: Currently not checking for wrapping. If end of one row and first two of next row are the same value, should return false.
+ * Note: Wrapping is currently being handled in validMove()
+ *
+ * @param {number} i - given index
+ * @param {number[]} board - current state of board 
+ * @returns {boolean} true if cell and it's 2 right neighbors are the same value
+ * @see validMove()
+ */
 export function validRightMatch(i, board) {
   return (inBoard(i+1) && inBoard(i+2) && board[i] === board[i+1] && board[i] === board[i+2])    
 }
 
+/**
+ * Determines if cell and it's 2 above neighbors are the same value.
+ * Note: Hardcoded for a 9x9 board (array of size 81)
+ *
+ * @param {number} i - given index
+ * @param {number[]} board - current state of board 
+ * @returns {boolean} true if cell and it's 2 above neighbors are the same value
+ */
 export function validUpMatch(i, board) {
   return (inBoard(i-9) && inBoard(i-18) && board[i] === board[i-9] && board[i] === board[i-18])     
 }
 
+/**
+ * Determines if cell and it's 2 below neighbors are the same value.
+ * Note: Hardcoded for a 9x9 board (array of size 81)
+ *
+ * @param {number} i - given index
+ * @param {number[]} board - current state of board 
+ * @returns {boolean} true if cell and it's 2 below neighbors are the same value
+ */
 export function validDownMatch(i, board) {
   return (inBoard(i+9) && inBoard(i+18) && board[i] === board[i+9] && board[i] === board[i+18])      
 }
 
+/**
+ * Determines if cell and it's adjacent vertical neighbors are the same value.
+ * Note: Hardcoded for a 9x9 board (array of size 81)
+ *
+ * @param {number} i - given index
+ * @param {number[]} board - current state of board 
+ * @returns {boolean} true if cell and it's 2 vertical neighbors are the same value
+ */
 export function validVerticalMatch(i, board) {
   return (inBoard(i+9) && inBoard(i-9) && board[i] === board[i+9] && board[i] === board[i-9])    
 }
 
+/**
+ * Determines if cell and it's adjacent horizontal neighbors are the same value.
+ * BUG: Currently not checking for wrapping. 
+ * Note: Wrapping is currently being handled in validMove()
+ *
+ * @param {number} i - given index
+ * @param {number[]} board - current state of board 
+ * @returns {boolean} true if cell and it's 2 horizontal neighbors are the same value
+ * @see validMove()
+ */
 export function validHorizontalMatch(i, board) {
   return (inBoard(i-1) && inBoard(i+1) && board[i] === board[i-1] && board[i] === board[i+1])    
 }
 
-/* Gameplay Functions */
+/* ----------------------------------  Gameplay Functions  ---------------------------------- */
 
-export function clearMatch(i, board, clearedCells) {
+/**
+ * Replaces matches with cell at index i with null
+ *
+ * @param {number} i - given cell index
+ * @param {number[]} board - current state of board 
+ * @param {Set} clearedCells - set that holds the values of indices needed to be cleared (used to pass into cascade())
+ * @returns {number[]} board where matches that include index i are replaced with null
+ * @see cascade()
+ */
+export function clearMatch(i, board, clearedCells) { 
   if (clearedCells === null) {
     clearedCells = new Set()
   }
@@ -310,6 +424,14 @@ export function clearMatch(i, board, clearedCells) {
   return newBoard
 }
 
+/**
+ * Fill in null spaces with non-null elements above them
+ *
+ * @param {number[]} board - Board immediately after matches were cleared. Null spaces represent empty spaces.
+ * @param {Set} emptyCells - Set that contains the indices of the null spaces. (Easier to find where to cascade)
+ * @returns {number[]} Board after cascade. Empty spaces should now be on top of non-empty spaces.
+ * @see fillIn()
+ */
 export function cascade(board, emptyCells) {
   let cascadedBoard = board.slice()
   for (const index of emptyCells) {
@@ -330,22 +452,15 @@ export function cascade(board, emptyCells) {
   return cascadedBoard
 }
 
-export function findAllMatches(board, clearedCells) {
-  for (let r = 0; r < 9; r++) {
-    for (let c = 0; c < 9; c++) {
-      let i = r * 9 + c
-      clearMatch(i, board, clearedCells)
-    }
-  }
-  return clearedCells
-}
-
-export function clearAllMatches(board, clearedCells) {
-  let clearedBoard = board.slice()
-  clearedCells.forEach(value => clearedBoard[value] = null)
-  return clearedBoard
-}
-
+/**
+ * Fill in empty spaces with random values. Should be ran after cascade()
+ * Note: Another method would be to make it so fill in always results in an active move.
+ *  However, this could ruin the game as valid moves would be centered in one area.
+ *
+ * @param {number[]} board - Board immediately after cascade. Empty spaces are above non-empty spaces.
+ * @returns {number[]} Board with null-values replaced with random values.
+ * @see cascade()
+ */
 export function fillIn(board) {
   const filledBoard = board.slice()
   for (let r = 0; r < 9; r++) {
@@ -360,6 +475,48 @@ export function fillIn(board) {
   return filledBoard
 }
 
+/**
+ * Find the location of all empty spaces if there are active matches. 
+ *
+ * @param {Array} board - Current state of the board. 
+ * @returns {Set} Set that contains the indices of the null spaces.
+ * @see clearAllMatches()
+ */
+export function findAllMatches(board) {
+  let clearedCells = new Set()
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      let i = r * 9 + c
+      clearMatch(i, board, clearedCells)
+    }
+  }
+  return clearedCells
+}
+
+/**
+ * Replaces all active matches with null. 
+ *
+ * @param {number[]} board - Current state of the board. 
+ * @param {Set} clearedCells - Set that contains the indices of the null spaces.
+ * @returns {number[]} Board after all active matches are replaces with null
+ * @see findAllMatches()
+ */
+export function clearAllMatches(board, clearedCells) {
+  let clearedBoard = board.slice()
+  clearedCells.forEach(value => clearedBoard[value] = null)
+  return clearedBoard
+}
+
+/**
+ * Brings the board to a stable state (no active matches) after player does a valid swap. 
+ * Clear Matches / Make Cells Null -> Cascade -> Fill In Empty Spaces -> Clear Active Matches, Cascade, and Fill In until there is no active matches (stable)
+ * Regenerates board if stable state does not have a valid move.
+ *
+ * @param {number[]} board - Current state of the board. 
+ * @param {number} selectOne - Index of player's first selected cell
+ * @param {number} selected - Index of player's second selected cell
+ * @returns {number[]} stable board after player makes valid swap 
+ */
 export function finishMove(board, selectOne, selected) {
   let nextSquares = board.slice()
   let clearedCells = new Set()
@@ -368,28 +525,25 @@ export function finishMove(board, selectOne, selected) {
   nextSquares = cascade(nextSquares, clearedCells)
   nextSquares = fillIn(nextSquares)
   
-  clearedCells.clear()
-  findAllMatches(nextSquares, clearedCells)
+  clearedCells = findAllMatches(nextSquares, clearedCells)
   while (clearedCells.size > 0) {
     console.log("cascade / generation resulted in match")
     nextSquares = clearAllMatches(nextSquares, clearedCells)
     nextSquares = cascade(nextSquares, clearedCells)
     nextSquares = fillIn(nextSquares) 
-    clearedCells.clear() 
-    findAllMatches(nextSquares, clearedCells)
+    clearedCells = findAllMatches(nextSquares, clearedCells)
   }
 
   if (!validMoveExists(board)) {
     nextSquares = generateValidBoard()
   }
 
-  // another method would be to make it so fill in always results in an active move. however this could ruin the game as valid moves would be centered in one area
-  // some
   return nextSquares
 }
 
 
-/* Example Methods to Try with Jest Testing */
+/* ----------------------------------  Example Functions used to test Jest Testing  ---------------------------------- */
+
 // export function add(a, b) {
 //   return a + b;
 // }
