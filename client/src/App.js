@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react'
 import ScoreObject from './Score'
+/*
+Current Bugs:
+  1. If 1st selected is swapped to make a match, and you click on where the swap occurs, game crashes
+*/
 
 function Square({value, onSquareClick, isSelected}) {
   const valueColors = {
@@ -35,6 +39,9 @@ export default function Board() {
   /**
    * 0 = Player has no cell selected
    * 1 = 1st Cell is Selected
+   * 2 = Active Match
+   * 4 = Cascade
+   * 5 = Fill In
    * @type {number}
    */
   const [state, setState] = useState(0) 
@@ -157,7 +164,8 @@ export default function Board() {
   }
 
   function renderSquare(i) {
-    return <Square key={i} value={squares[i]} onSquareClick={() => handleClick(i)} isSelected={state === 1 && i === selectOne} />
+    let key = "square-"+i
+    return <Square key={key} value={squares[i]} onSquareClick={() => handleClick(i)} isSelected={state === 1 && i === selectOne} />
   }
 
   function renderRow(row) {
@@ -419,6 +427,7 @@ export function validHorizontalMatch(i, board) {
  * @see cascade()
  */
 export function clearMatch(i, board, clearedCells) { 
+  if (board[i] === null) return
   if (clearedCells === null) {
     clearedCells = new Set()
   }
@@ -531,12 +540,12 @@ export function fillIn(board) {
  * @returns {Set} Set that contains the indices of the null spaces.
  * @see clearAllMatches()
  */
-export function findAllMatches(board, scoreObject) {
+export function findAllMatches(board) {
   let clearedCells = new Set()
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
       let i = r * 9 + c
-      clearMatch(i, board, clearedCells, null)
+      clearMatch(i, board, clearedCells)
     }
   }
   // if (clearedCells.size > 0) {
@@ -553,7 +562,7 @@ export function findAllMatches(board, scoreObject) {
  *
  * @param {number[]} board - Current state of the board. 
  * @param {Set} clearedCells - Set that contains the indices of the null spaces.
- * @returns {number[]} Board after all active matches are replaces with null
+ * @returns {number[]} Board after all active matches are replaced with null
  * @see findAllMatches()
  */
 export function clearAllMatches(board, clearedCells) {
@@ -566,6 +575,7 @@ export function clearAllMatches(board, clearedCells) {
  * Brings the board to a stable state (no active matches). Typically after player does a valid swap. 
  * Clear Matches / Make Cells Null -> Cascade -> Fill In Empty Spaces -> Clear Active Matches, Cascade, and Fill In until there is no active matches (stable)
  * Regenerates board if stable state does not have a valid move.
+ * Score Object is being updated throughout.
  *
  * @param {number[]} board - Current state of the board. 
  * @param {number} selectOne - Index of player's first selected cell
@@ -583,20 +593,33 @@ export function finishMove(board, selectOne, selected, scoreObject) {
   console.log("Current score: " + scoreObject.value)
   console.log("You cleared " + clearedCells.size + " cells with that swap!")
   scoreObject.value += clearedCells.size
-  console.log("New Score: " + scoreObject.value)
 
   nextSquares = cascade(nextSquares, clearedCells)
-  nextSquares = fillIn(nextSquares)
-  
+
   clearedCells = findAllMatches(nextSquares, scoreObject)
+  console.log("Cascade resulted in clearing " + clearedCells.size + " cells!")
+  scoreObject.value += clearedCells.size
+
+  nextSquares = fillIn(nextSquares)
+  clearedCells = findAllMatches(nextSquares, scoreObject)
+  
   while (clearedCells.size > 0) {
+    console.log("Fill in resulted in clearing " + clearedCells.size + " cells!")
+    scoreObject.value += clearedCells.size
+
     nextSquares = clearAllMatches(nextSquares, clearedCells)
     nextSquares = cascade(nextSquares, clearedCells)
+
+    clearedCells = findAllMatches(nextSquares, scoreObject)
+    console.log("Cascade resulted in clearing " + clearedCells.size + " cells!")
+    scoreObject.value += clearedCells.size
+
     nextSquares = fillIn(nextSquares) 
     clearedCells = findAllMatches(nextSquares, scoreObject)
   }
 
-  if (!validMoveExists(board)) {
+  console.log("New Score: " + scoreObject.value)
+  if (!validMoveExists(nextSquares)) {  
     nextSquares = generateValidBoard()
   }
 
