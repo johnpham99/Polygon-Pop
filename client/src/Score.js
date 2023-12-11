@@ -11,12 +11,4 @@ export default class Score {
     set value(newValue) {
         this._value = newValue
     }
-
-    resetScore() {
-        this.value = 0
-    }
-
-    addToScore(points) {
-        this.value += points
-    }
 }
