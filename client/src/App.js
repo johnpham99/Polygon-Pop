@@ -3,6 +3,7 @@ import ScoreObject from './Score'
 import { validMoveExists, validMove, inBoard } from './BoardValidation';
 import {generateValidBoard} from './BoardGeneration';
 import {cascade, fillIn, findAllMatches, clearAllMatches} from './Gameplay';
+import Timer from './Timer';
 
 /*
 TO-DO LIST:
@@ -33,7 +34,11 @@ let clearedCells = new Set()
  * 6: stable board (checking for valid move)
  * @type {number} 
  */
-let state = 0
+export let state = 0
+
+export const setState = (newValue) => {
+  state = newValue;
+};
 
 
 /**
@@ -262,6 +267,7 @@ export default function Board() {
     <>
       {[0,1,2,3,4,5,6,7,8].map((row) => renderRow(row))}
       <Score value={score}/>
+      <Timer initialTime={100}/>
     </>
   );
 }
