@@ -8,28 +8,64 @@ import {cascade, fillIn, findAllMatches, clearAllMatches} from './Gameplay';
 TO-DO LIST:
   1. Start Button
   2. Timer
-  3. Custmize number of values
-  4. Customize boardsize
+  3. Customize boardsize (requires code refactoring, functions initially hardcoded for 9x9)
+  4. Custmize number of values
   5. Customize delay time
   6. Customize color scheme
 */
 
-let clearedCells = new Set()
-/* 
-0 = no cells selected
-1 = 1st cell selected
-2 = active matches (resulted from 2nd cell selected)
-3 = cascading
-4 = filling in
-5 = active matches (resulted from filling in)
-6 = stable board (checking for valid move)
-*/
 
+/**
+ * Set of indices that represent which indicies were recently cleared.
+ * @type {Set{number}} 
+ * @see finishMove
+ */
+let clearedCells = new Set()
+
+/**
+ * State of the game.
+ * 0: no cells selected
+ * 1: 1st cell selected
+ * 2: active match (resulted from 2nd cell selected)
+ * 3: cascading
+ * 4: filling in
+ * 5: active matches (resulted from cascade/fill)
+ * 6: stable board (checking for valid move)
+ * @type {number} 
+ */
 let state = 0
+
+
+/**
+ * Index of player's first selected cell before a swap
+ * @type {number} 
+ */
 let selectOne = -1
+
+/**
+ * Value of player's first selected cell before a swap
+ * @type {number} 
+ */
 let selectOneValue = -1
+
+
+/**
+ * Index of player's second selected cell before a swap
+ * @type {number} 
+ */
 let selectTwo = -1
+
+
+/**
+ * Object that holds the player's score in the game. 
+ * Later on, if there were special score scenarios (ex: chains of matches, 5+ clear gives a multiplier, etc.), can be written in the class.
+ * Instance of the scoreObject is passed around different gameplay functions. 
+ * @type {ScoreObject} 
+ */
 const scoreObject = new ScoreObject(0)
+
+
+
 
 function Square({value, onSquareClick, isSelected}) {
   const valueColors = {
@@ -42,7 +78,7 @@ function Square({value, onSquareClick, isSelected}) {
 
   const squareStyle = {
     backgroundColor: valueColors[value] || 'white',
-    border: isSelected ? '3px solid black' : '1px solid black', // Set border style and color
+    border: isSelected ? '3px solid black' : '1px solid black', 
   };
 
   return <button className="square" style={squareStyle} onClick = {onSquareClick}>
@@ -56,12 +92,14 @@ function Score({value}) {
 
 export default function Board() {
 
+  //Gameboard is represented by a 1D array. Currently hardcoded for 9x9.
   const [squares, setSquares] = useState(Array(81).fill(null))
+
   const [score, setScore] = useState(0)
   
   useEffect(() => {
     console.log("page launch")
-    setSquares(generateValidBoard())
+    setSquares(generateValidBoard(9, 9))
   }, []); 
 
   function handleClick(i) {
@@ -78,27 +116,6 @@ export default function Board() {
       setSquares(nextSquares) 
     }
   }
-
-  // useEffect(() => {
-  //   // Your logic here
-  //   if (state === 2) {
-  //     const delayedLogic = () => {
-  //       const nextSquares = finishMove(squares, selectOne, selectTwo, scoreObject);
-  //       console.log("setting score to " + scoreObject.value);
-  //       setScore(scoreObject.value);
-  //       selectTwo = -1;
-  //       setSquares(nextSquares);
-  //       state = 0
-  //     };
-
-  //     // Introduce a delay of 300 milliseconds (adjust as needed)
-  //     const delayTime = 300;
-  //     const delayId = setTimeout(delayedLogic, delayTime);
-
-  //     // Cleanup function to clear the timeout if the component unmounts or dependencies change
-  //     return () => clearTimeout(delayId);
-  //   }
-  // }, [squares, scoreObject]);
 
   useEffect(() => {
     // Your logic here
@@ -152,9 +169,9 @@ export default function Board() {
         delayTime = 500
         console.log("checking if there is a valid move....")
         let nextSquares = squares.slice()
-        if (!validMoveExists(nextSquares)) {
+        if (!validMoveExists(nextSquares, 9, 9)) {
           console.log("no valid move exists!")
-          nextSquares = generateValidBoard()
+          nextSquares = generateValidBoard(9, 9)
         }
         setSquares(nextSquares)
         state = 0
@@ -177,7 +194,7 @@ export default function Board() {
    * @param {number[]} nextSquares - Current state of the board. 
    * @param {number} selected - Index of player's second selected cell
    * @param {number} selectOne - Index of player's first selected cell
-   * @returns {number[]} board after player selects second cell
+   * @returns {number[]} board after swap 
    */
   function startMove(nextSquares, selected, selectOne) {
     switch(selected){
@@ -313,6 +330,16 @@ export function clearMatch(i, board, clearedCells) {
   clearedCells.forEach(value => newBoard[value] = null)
   return newBoard
 }
+
+/**
+ * Returns board immediately after player swap/clear is processed. Score gets updated accordingly.
+ *
+ * @param {number[]} board - current state of board 
+ * @param {number} selectOne - index of player's first selected cell
+ * @param {number} selected - index of player's second selected cell
+ * @param {ScoreObject} scoreObject - object that holds score value
+ * @returns {number[]} board after player swap match clears
+ */
 export function finishMove(board, selectOne, selected, scoreObject) {
   let nextSquares = board.slice()
   clearedCells = new Set()
@@ -327,6 +354,13 @@ export function finishMove(board, selectOne, selected, scoreObject) {
   return nextSquares
 }
 
+/**
+ * Returns board immediately after cascade happens. Adds to clearedCells, the clears that result from the cascade. Updates score object accordingly.
+ *
+ * @param {number[]} board - current state of board 
+ * @param {ScoreObject} scoreObject - object that holds score value
+ * @returns {number[]} board after cascade occurs
+ */
 export function afterCascade(board, scoreObject) {
   let nextSquares = board.slice()
   nextSquares = cascade(nextSquares, clearedCells)
@@ -336,6 +370,13 @@ export function afterCascade(board, scoreObject) {
   return nextSquares
 }
 
+/**
+ * Returns board immediately after fill happens. Adds to clearedCells, the clears that result from the fill. Updates score object accordingly.
+ *
+ * @param {number[]} board - current state of board 
+ * @param {ScoreObject} scoreObject - object that holds score value
+ * @returns {number[]} board after player fill occurs
+ */
 export function afterFill(board, scoreObject) {
   let nextSquares = board.slice()
   let clearedCells2 = new Set()
@@ -351,6 +392,12 @@ export function afterFill(board, scoreObject) {
   return nextSquares
 }
 
+/**
+ * Returns board immediately after all active clears disappear. (Active clears are represented by the global clearedCells object)
+ *
+ * @param {number[]} board - current state of board 
+ * @returns {number[]} board after every i in clearedCells becomes null
+ */
 export function afterClearAll(board) {
   let nextSquares = board.slice()
   nextSquares = clearAllMatches(nextSquares, clearedCells)

@@ -53,10 +53,10 @@ export function cascade(board, emptyCells) {
   }
 
 /**
- * Find the location of all empty spaces if there are active matches. 
+ * Find the location of all spaces that need to be cleared (because they are in an active match). 
  *
  * @param {Array} board - Current state of the board. 
- * @returns {Set} Set that contains the indices of the null spaces.
+ * @returns {Set} Set that contains the indices spaces that should be null spaces.
  * @see clearAllMatches()
  */
 export function findAllMatches(board) {
@@ -75,7 +75,7 @@ export function findAllMatches(board) {
  * Replaces all active matches with null. 
  *
  * @param {number[]} board - Current state of the board. 
- * @param {Set} clearedCells - Set that contains the indices of the null spaces.
+ * @param {Set} clearedCells - Set that contains the indices of active matches
  * @returns {number[]} Board after all active matches are replaced with null
  * @see findAllMatches()
  */
