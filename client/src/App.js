@@ -128,7 +128,7 @@ export default function Board() {
     let delayedLogic
     switch(state) {
       case 2:
-        delayTime = 500
+        delayTime = 100
         delayedLogic = () => {
           const nextSquares = finishMove(squares, selectOne, selectTwo, scoreObject)
           setSquares(nextSquares)
@@ -149,7 +149,7 @@ export default function Board() {
         };  
         break;
       case 4:
-        delayTime = 800
+        delayTime = 0
         delayedLogic = () => {
           const nextSquares = afterFill(squares, scoreObject)
           setSquares(nextSquares)
@@ -161,7 +161,7 @@ export default function Board() {
         }; 
         break;
       case 5:
-        delayTime = 700
+        delayTime = 500
         delayedLogic = () => {
           const nextSquares = afterClearAll(squares)
           setSquares(nextSquares)
