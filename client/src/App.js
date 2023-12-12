@@ -1,4 +1,71 @@
 import { useEffect, useState } from 'react'
+import ScoreObject from './Score'
+import { validMoveExists, validMove, inBoard } from './BoardValidation';
+import {generateValidBoard} from './BoardGeneration';
+import {cascade, fillIn, findAllMatches, clearAllMatches} from './Gameplay';
+
+/*
+TO-DO LIST:
+  1. Start Button
+  2. Timer
+  3. Customize boardsize (requires code refactoring, functions initially hardcoded for 9x9)
+  4. Custmize number of values
+  5. Customize delay time
+  6. Customize color scheme
+*/
+
+
+/**
+ * Set of indices that represent which indicies were recently cleared.
+ * @type {Set{number}} 
+ * @see finishMove
+ */
+let clearedCells = new Set()
+
+/**
+ * State of the game.
+ * 0: no cells selected
+ * 1: 1st cell selected
+ * 2: active match (resulted from 2nd cell selected)
+ * 3: cascading
+ * 4: filling in
+ * 5: active matches (resulted from cascade/fill)
+ * 6: stable board (checking for valid move)
+ * @type {number} 
+ */
+let state = 0
+
+
+/**
+ * Index of player's first selected cell before a swap
+ * @type {number} 
+ */
+let selectOne = -1
+
+/**
+ * Value of player's first selected cell before a swap
+ * @type {number} 
+ */
+let selectOneValue = -1
+
+
+/**
+ * Index of player's second selected cell before a swap
+ * @type {number} 
+ */
+let selectTwo = -1
+
+
+/**
+ * Object that holds the player's score in the game. 
+ * Later on, if there were special score scenarios (ex: chains of matches, 5+ clear gives a multiplier, etc.), can be written in the class.
+ * Instance of the scoreObject is passed around different gameplay functions. 
+ * @type {ScoreObject} 
+ */
+const scoreObject = new ScoreObject(0)
+
+
+
 
 function Square({value, onSquareClick, isSelected}) {
   const valueColors = {
@@ -9,14 +76,9 @@ function Square({value, onSquareClick, isSelected}) {
     4: '#9BF6FF',
   };
 
-  
-  // const squareStyle = {
-  //   backgroundColor: isSelected ? 'yellow' : valueColors[value] || 'white',
-  // };
-
   const squareStyle = {
     backgroundColor: valueColors[value] || 'white',
-    border: isSelected ? '3px solid black' : '1px solid black', // Set border style and color
+    border: isSelected ? '3px solid black' : '1px solid black', 
   };
 
   return <button className="square" style={squareStyle} onClick = {onSquareClick}>
@@ -24,114 +86,168 @@ function Square({value, onSquareClick, isSelected}) {
   </button>
 }
 
+function Score({value}) {
+  return <div>Score: {value}</div>
+}
+
 export default function Board() {
-  /**
-   * 1D Array that keeps track of the values of all squares.
-   * Note: Currently, boards are all squares, so an array of size 81 is 9x9 board.
-   * @type {number[]}
-   */
+
+  //Gameboard is represented by a 1D array. Currently hardcoded for 9x9.
   const [squares, setSquares] = useState(Array(81).fill(null))
 
-  /**
-   * 0 = Player has no cell selected
-   * 1 = 1st Cell is Selected
-   * @type {number}
-   */
-  const [state, setState] = useState(0) 
-
-  /**
-   * Holds the index of the player's 1st selected cell
-   * Value of -1 means player has not selected a cell yet.
-   * @type {number}
-   * @see {}
-   */
-  const [selectOne, setSelectOne] = useState(-1)
-
-  /**
-   * Holds the value of the player's 1st selected cell
-   * @type {number}
-   */
-  const [selectOneValue, setSelectOneValue] = useState(-1)
+  const [score, setScore] = useState(0)
   
   useEffect(() => {
     console.log("page launch")
-    setSquares(generateValidBoard())
+    setSquares(generateValidBoard(9, 9))
   }, []); 
 
   function handleClick(i) {
     let nextSquares = squares.slice()
     let selected = i;
     if (state === 0) {
-      console.log("1st select: " + squares[i])
-      setSelectOne(i)
-      setSelectOneValue(squares[i])
-      setState(1)
+      console.log("1st select: " + i)
+      selectOne = i
+      selectOneValue = squares[i]
+      state = 1
+      setSquares(nextSquares)
     } else if (state === 1) {
       nextSquares = startMove(nextSquares, selected, selectOne)
       setSquares(nextSquares) 
-
-      // Hacking way to delay rendering....
-      // Introduce a delay before calling finishMove
-      setTimeout(() => {
-        // This will allow the component to render before executing the next step
-        setSquares((prevSquares) => {
-          // Continue with the rest of the logic
-          nextSquares = finishMove(prevSquares, selectOne, selected);
-          return nextSquares;
-        });
-      }, 300); // You can adjust the delay time as needed
-
-      // nextSquares = finishMove(nextSquares, selectOne, selected)
     }
-    setSquares(nextSquares)
   }
 
+  useEffect(() => {
+    // Your logic here
+    let delayTime
+    let delayedLogic
+    switch(state) {
+      case 2:
+        delayTime = 500
+        delayedLogic = () => {
+          const nextSquares = finishMove(squares, selectOne, selectTwo, scoreObject)
+          setSquares(nextSquares)
+          selectOne = -1
+          selectOneValue = -1
+          selectTwo = -1
+          state = 3
+          console.log("setting score to " + scoreObject.value)
+          setScore(scoreObject.value)
+        };     
+        break;
+      case 3:
+        delayTime = 500
+        delayedLogic = () => {
+          const nextSquares = afterCascade(squares, scoreObject)
+          setSquares(nextSquares)
+          state = 4
+        };  
+        break;
+      case 4:
+        delayTime = 800
+        delayedLogic = () => {
+          const nextSquares = afterFill(squares, scoreObject)
+          setSquares(nextSquares)
+          if (clearedCells.size > 0) {
+            state = 5
+          } else {
+            state = 6
+          }
+        }; 
+        break;
+      case 5:
+        delayTime = 700
+        delayedLogic = () => {
+          const nextSquares = afterClearAll(squares)
+          setSquares(nextSquares)
+          state = 3
+          console.log("setting score to " + scoreObject.value)
+          setScore(scoreObject.value)
+        }; 
+        break;
+      case 6:
+        delayTime = 500
+        console.log("checking if there is a valid move....")
+        let nextSquares = squares.slice()
+        if (!validMoveExists(nextSquares, 9, 9)) {
+          console.log("no valid move exists!")
+          nextSquares = generateValidBoard(9, 9)
+        }
+        setSquares(nextSquares)
+        state = 0
+        console.log("setting score to " + scoreObject.value)
+        setScore(scoreObject.value)
+        break;
+      default:
+        break;   
+    }
+
+    const delayId = setTimeout(delayedLogic, delayTime);
+
+    // Cleanup function to clear the timeout if the component unmounts or dependencies change
+    return () => clearTimeout(delayId);
+  }, [squares, scoreObject]);
+
+  /**
+   * Changes state of the game / the board after player selects second cell.
+   *
+   * @param {number[]} nextSquares - Current state of the board. 
+   * @param {number} selected - Index of player's second selected cell
+   * @param {number} selectOne - Index of player's first selected cell
+   * @returns {number[]} board after swap 
+   */
   function startMove(nextSquares, selected, selectOne) {
-    console.log("2nd select:")
-    switch(true){
-      case selected === selectOne - 1:
-        console.log("adjacent cell pressed")
+    switch(selected){
+      case selectOne - 1:
+        console.log("2nd select: " + selected)
         if (validMove(selectOne, "L", nextSquares)) {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
+          selectTwo = selected
+          state = 2
         } 
         break;
-      case selected === selectOne + 1:
-        console.log("adjacent cell pressed")
+      case selectOne + 1:
+        console.log("2nd select: " + selected)
         if (validMove(selectOne, "R", nextSquares)) {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
+          selectTwo = selected
+          state = 2
         }
         break;
-      case selected === selectOne - 9:
-        console.log("adjacent cell pressed")
+      case selectOne - 9:
+        console.log("2nd select: " + selected)
         if (validMove(selectOne, "U", nextSquares)) {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
+          selectTwo = selected
+          state = 2
         }
         break;
-      case selected === selectOne + 9:
-        console.log("adjacent cell pressed")
+      case selectOne + 9:
+        console.log("2nd select: " + selected)
         if (validMove(selectOne, "D", nextSquares)) {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
+          selectTwo = selected
+          state = 2
         }
         break;
-      case selected === selectOne:
-        console.log("same cell pressed")
-        nextSquares[selected] = selectOneValue
+      case selectOne:
+        console.log("2nd select: same cell pressed")
+        state = 0
         break;
       default:
-        console.log("pressed invalid cell")
+        console.log("2nd select: invalid cell")
         return nextSquares
     }
-    setState(0)
-    setSelectOneValue(-1)
     return nextSquares
   }
 
   function renderSquare(i) {
-    return <Square value={squares[i]} onSquareClick={() => handleClick(i)} isSelected={state === 1 && i === selectOne} />
+    let key = "square-"+i
+    return <Square key={key} value={squares[i]} onSquareClick={() => handleClick(i)} isSelected={state === 1 && i === selectOne} />
   }
 
   function renderRow(row) {
@@ -145,239 +261,9 @@ export default function Board() {
   return(
     <>
       {[0,1,2,3,4,5,6,7,8].map((row) => renderRow(row))}
+      <Score value={score}/>
     </>
   );
-}
-
-
-/* ----------------------------------  Functions For Board Generation + Move Validation ---------------------------------- */
-
-/**
- * Generates a board (1D array of size 81) with random numbers [1-5].
- * This function makes sures that there are no matches (3 or more straight vertically/horizontally adjacent cells with the same value).
- * Note: Array size and value range is currently hardcoded. In the future, I plan on making these values player customizable.
- *
- * @returns {number[]} Random 1D Array of size 81 with random numbers [1-5]
- * @see generateValidBoard()
- */
-function generateBoard() {
-  const board = Array(81).fill(null)
-
-  for (let r = 0; r < 9; r++) {
-    for (let c = 0; c < 9; c++) {
-      let bannedValues = new Set()
-      let i = r * 9 + c
-      if (c > 1 && board[i-1] === board[i-2]) {
-        bannedValues.add(board[i-1])
-      }
-      if (r > 1 && board[i-9] === board[i-18]) {
-        bannedValues.add(board[i-9])
-      }
-      let randomNumber = Math.floor(Math.random() * 5);
-      while (bannedValues.has(randomNumber)) {
-        randomNumber = Math.floor(Math.random() * 5)
-      }
-      board[i] = randomNumber
-    }
-  }
-  return board;
-}
-
-/**
- * Generates a valid board.
- * Valid board means there is at least one move (swapping of 2 adjacent cells) that makes a match.
- *
- * @returns {number[]} Random valid 1D Array of size 81 with random numbers [1-5]
- * @see validMoveExists()
- */
-function generateValidBoard() {
-  console.log("generating a valid board")
-  let randomBoard = generateBoard()
-  while (!validMoveExists(randomBoard)) {
-    randomBoard = generateBoard()
-  }
-  return randomBoard
-}
-
-/**
- * Determines if there is a valid move on the board. A move is when a player swaps two directly adjacent cells.
- * A move is valid if it results in a match.
- *
- * @param {number[]} board - Current board state
- * @returns {boolean} True if there are no 3 straight vertically/horizontally adjacent cells with the same value
- * @see validMove()
- */
-export function validMoveExists(board) {
-  console.log("checking if valid move exists")
-  for (let r = 0; r < 9; r++) {
-    for (let c = 0; c < 9; c++) {
-      let i = r * 9 + c
-      if (validMove(i, "R", board) || validMove(i, "D", board)) return true;
-    }
-  }
-  return false;
-}
-
-/**
- * Determines if a move is valid. A move is being represented as a cell and direction of cell that it is being swapped with.
- *
- * @param {number} i - index of player's first selected cell
- * @param {String} direction - where player is trying to move/swap selected cell ("L" = left, "R" = right, "U" = up, "D" = down)
- * @param {number[]} - current state of the board
- * @returns {boolean} true if given move is valid
- */
-function validMove(i, direction, board) {
-  const future = board.slice()
-  const curr = future[i]
-  switch (direction) {
-    case "L":
-      if (i % 9 === 0) return false
-      future[i] = future[i-1]
-      future[i-1] = curr
-      if (validVerticalMatch(i-1, future)) return true
-      if (validUpMatch(i-1, future)) return true
-      if (validDownMatch(i-1, future)) return true
-      if (validLeftMatch(i-1,future)) return true
-
-      if (validVerticalMatch(i, future)) return true
-      if (validUpMatch(i, future)) return true
-      if (validDownMatch(i, future)) return true
-      if (validRightMatch(i,future)) return true
-      break;
-    case "R":
-      if ((i + 1) % 9 === 0) return false
-      future[i] = future[i+1]
-      future[i+1] = curr
-      if (validVerticalMatch(i+1, future)) return true
-      if (validRightMatch(i+1, future)) return true
-      if (validUpMatch(i+1, future)) return true
-      if (validDownMatch(i+1, future)) return true
-
-      if (validVerticalMatch(i, future)) return true
-      if (validUpMatch(i, future)) return true
-      if (validDownMatch(i, future)) return true
-      if (validLeftMatch(i,future)) return true
-      break;
-    case "U":
-      if (i < 9) return false
-      future[i] = future[i-9]
-      future[i-9] = curr
-      if (validLeftMatch(i-9, future)) return true
-      if (validRightMatch(i-9, future)) return true
-      if (validUpMatch(i-9, future)) return true
-      if (validHorizontalMatch(i-9, future)) return true
-
-      if (validLeftMatch(i, future)) return true
-      if (validRightMatch(i, future)) return true
-      if (validHorizontalMatch(i, future)) return true
-      if (validDownMatch(i,future)) return true
-      break;
-    case "D":
-      if (i >= board.length - 9) return false
-      future[i] = future[i+9]
-      future[i+9] = curr
-      if (validLeftMatch(i+9, future)) return true
-      if (validRightMatch(i+9, future)) return true
-      if (validDownMatch(i+9, future)) return true
-      if (validHorizontalMatch(i+9, future)) return true
-
-      if (validLeftMatch(i, future)) return true
-      if (validRightMatch(i, future)) return true
-      if (validHorizontalMatch(i, future)) return true
-      if (validUpMatch(i,future)) return true
-      break;
-    default:
-      break;
-  }
-}
-
-/**
- * Determines if given index is a valid index with current board.
- * Note: Board is currently hardcoded as an array of 81 (9x9).
- *
- * @param {number} i - given index
- * @returns {boolean} true if index is within bounds
- */
-export function inBoard(i) {
-  return i >= 0 && i < 81
-}
-
-/**
- * Determines if cell and it's two left neighbors are the same value.
- * BUG: Currently not checking for wrapping. If beginning of one row and last two of previous row are the same value, should return false.
- * Note: Wrapping is currently being handled in validMove()
- *
- * @param {number} i - given index
- * @param {number[]} board - current state of board 
- * @returns {boolean} true if cell and it's 2 left neighbors are the same value
- * @see validMove()
- */
-export function validLeftMatch(i, board) {
-  return (inBoard(i-1) && inBoard(i-2) && board[i] === board[i-1] && board[i] === board[i-2])
-}
-
-/**
- * Determines if cell and it's two right neighbors are the same value.
- * BUG: Currently not checking for wrapping. If end of one row and first two of next row are the same value, should return false.
- * Note: Wrapping is currently being handled in validMove()
- *
- * @param {number} i - given index
- * @param {number[]} board - current state of board 
- * @returns {boolean} true if cell and it's 2 right neighbors are the same value
- * @see validMove()
- */
-export function validRightMatch(i, board) {
-  return (inBoard(i+1) && inBoard(i+2) && board[i] === board[i+1] && board[i] === board[i+2])    
-}
-
-/**
- * Determines if cell and it's 2 above neighbors are the same value.
- * Note: Hardcoded for a 9x9 board (array of size 81)
- *
- * @param {number} i - given index
- * @param {number[]} board - current state of board 
- * @returns {boolean} true if cell and it's 2 above neighbors are the same value
- */
-export function validUpMatch(i, board) {
-  return (inBoard(i-9) && inBoard(i-18) && board[i] === board[i-9] && board[i] === board[i-18])     
-}
-
-/**
- * Determines if cell and it's 2 below neighbors are the same value.
- * Note: Hardcoded for a 9x9 board (array of size 81)
- *
- * @param {number} i - given index
- * @param {number[]} board - current state of board 
- * @returns {boolean} true if cell and it's 2 below neighbors are the same value
- */
-export function validDownMatch(i, board) {
-  return (inBoard(i+9) && inBoard(i+18) && board[i] === board[i+9] && board[i] === board[i+18])      
-}
-
-/**
- * Determines if cell and it's adjacent vertical neighbors are the same value.
- * Note: Hardcoded for a 9x9 board (array of size 81)
- *
- * @param {number} i - given index
- * @param {number[]} board - current state of board 
- * @returns {boolean} true if cell and it's 2 vertical neighbors are the same value
- */
-export function validVerticalMatch(i, board) {
-  return (inBoard(i+9) && inBoard(i-9) && board[i] === board[i+9] && board[i] === board[i-9])    
-}
-
-/**
- * Determines if cell and it's adjacent horizontal neighbors are the same value.
- * BUG: Currently not checking for wrapping. 
- * Note: Wrapping is currently being handled in validMove()
- *
- * @param {number} i - given index
- * @param {number[]} board - current state of board 
- * @returns {boolean} true if cell and it's 2 horizontal neighbors are the same value
- * @see validMove()
- */
-export function validHorizontalMatch(i, board) {
-  return (inBoard(i-1) && inBoard(i+1) && board[i] === board[i-1] && board[i] === board[i+1])    
 }
 
 /* ----------------------------------  Gameplay Functions  ---------------------------------- */
@@ -392,9 +278,8 @@ export function validHorizontalMatch(i, board) {
  * @see cascade()
  */
 export function clearMatch(i, board, clearedCells) { 
-  if (clearedCells === null) {
-    clearedCells = new Set()
-  }
+  if (board[i] === null) return
+
   if (clearedCells.has(i)) return
   let newBoard = board.slice()
   let u = i
@@ -447,122 +332,78 @@ export function clearMatch(i, board, clearedCells) {
 }
 
 /**
- * Fill in null spaces with non-null elements above them
+ * Returns board immediately after player swap/clear is processed. Score gets updated accordingly.
  *
- * @param {number[]} board - Board immediately after matches were cleared. Null spaces represent empty spaces.
- * @param {Set} emptyCells - Set that contains the indices of the null spaces. (Easier to find where to cascade)
- * @returns {number[]} Board after cascade. Empty spaces should now be on top of non-empty spaces.
- * @see fillIn()
+ * @param {number[]} board - current state of board 
+ * @param {number} selectOne - index of player's first selected cell
+ * @param {number} selected - index of player's second selected cell
+ * @param {ScoreObject} scoreObject - object that holds score value
+ * @returns {number[]} board after player swap match clears
  */
-export function cascade(board, emptyCells) {
-  let cascadedBoard = board.slice()
-  for (const index of emptyCells) {
-    if (!(cascadedBoard[index] === null)) continue;
-    let curr = index
-    while (inBoard(curr)) {
-      let search = curr
-      while (cascadedBoard[search] === null) {
-        search -= 9
-        if (!inBoard(search)) break;
-      }
-      if (!inBoard(search)) break
-      cascadedBoard[curr] = cascadedBoard[search]
-      cascadedBoard[search] = null
-      curr -= 9
-    }
-  }
-  return cascadedBoard
-}
-
-/**
- * Fill in empty spaces with random values. Should be ran after cascade()
- * Note: Another method would be to make it so fill in always results in an active move.
- *  However, this could ruin the game as valid moves would be centered in one area.
- *
- * @param {number[]} board - Board immediately after cascade. Empty spaces are above non-empty spaces.
- * @returns {number[]} Board with null-values replaced with random values.
- * @see cascade()
- */
-export function fillIn(board) {
-  const filledBoard = board.slice()
-  for (let r = 0; r < 9; r++) {
-    for (let c = 0; c < 9; c++) {
-      let i = r * 9 + c
-      if (board[i] === null) {
-        let randomNumber = Math.floor(Math.random() * 5)
-        filledBoard[i] = randomNumber
-      }
-    }
-  }
-  return filledBoard
-}
-
-/**
- * Find the location of all empty spaces if there are active matches. 
- *
- * @param {Array} board - Current state of the board. 
- * @returns {Set} Set that contains the indices of the null spaces.
- * @see clearAllMatches()
- */
-export function findAllMatches(board) {
-  let clearedCells = new Set()
-  for (let r = 0; r < 9; r++) {
-    for (let c = 0; c < 9; c++) {
-      let i = r * 9 + c
-      clearMatch(i, board, clearedCells)
-    }
-  }
-  return clearedCells
-}
-
-/**
- * Replaces all active matches with null. 
- *
- * @param {number[]} board - Current state of the board. 
- * @param {Set} clearedCells - Set that contains the indices of the null spaces.
- * @returns {number[]} Board after all active matches are replaces with null
- * @see findAllMatches()
- */
-export function clearAllMatches(board, clearedCells) {
-  let clearedBoard = board.slice()
-  clearedCells.forEach(value => clearedBoard[value] = null)
-  return clearedBoard
-}
-
-/**
- * Brings the board to a stable state (no active matches). Typically after player does a valid swap. 
- * Clear Matches / Make Cells Null -> Cascade -> Fill In Empty Spaces -> Clear Active Matches, Cascade, and Fill In until there is no active matches (stable)
- * Regenerates board if stable state does not have a valid move.
- *
- * @param {number[]} board - Current state of the board. 
- * @param {number} selectOne - Index of player's first selected cell
- * @param {number} selected - Index of player's second selected cell
- * @returns {number[]} stable board after player makes valid swap 
- */
-export function finishMove(board, selectOne, selected) {
-  console.log("finishing move")
+export function finishMove(board, selectOne, selected, scoreObject) {
   let nextSquares = board.slice()
-  let clearedCells = new Set()
+  clearedCells = new Set()
+
   nextSquares = clearMatch(selectOne, nextSquares, clearedCells)
   nextSquares = clearMatch(selected, nextSquares, clearedCells)
-  nextSquares = cascade(nextSquares, clearedCells)
-  nextSquares = fillIn(nextSquares)
-  
-  clearedCells = findAllMatches(nextSquares, clearedCells)
-  while (clearedCells.size > 0) {
-    console.log("cascade / generation resulted in match")
-    nextSquares = clearAllMatches(nextSquares, clearedCells)
-    nextSquares = cascade(nextSquares, clearedCells)
-    nextSquares = fillIn(nextSquares) 
-    clearedCells = findAllMatches(nextSquares, clearedCells)
-  }
 
-  if (!validMoveExists(board)) {
-    nextSquares = generateValidBoard()
-  }
+  console.log("Current score: " + scoreObject.value)
+  console.log("You cleared " + clearedCells.size + " cells with that swap!")
+  scoreObject.value += clearedCells.size
 
   return nextSquares
 }
+
+/**
+ * Returns board immediately after cascade happens. Adds to clearedCells, the clears that result from the cascade. Updates score object accordingly.
+ *
+ * @param {number[]} board - current state of board 
+ * @param {ScoreObject} scoreObject - object that holds score value
+ * @returns {number[]} board after cascade occurs
+ */
+export function afterCascade(board, scoreObject) {
+  let nextSquares = board.slice()
+  nextSquares = cascade(nextSquares, clearedCells)
+  clearedCells = findAllMatches(nextSquares, scoreObject)
+  console.log("Cascade resulted in clearing " + clearedCells.size + " cells!")
+  scoreObject.value += clearedCells.size
+  return nextSquares
+}
+
+/**
+ * Returns board immediately after fill happens. Adds to clearedCells, the clears that result from the fill. Updates score object accordingly.
+ *
+ * @param {number[]} board - current state of board 
+ * @param {ScoreObject} scoreObject - object that holds score value
+ * @returns {number[]} board after player fill occurs
+ */
+export function afterFill(board, scoreObject) {
+  let nextSquares = board.slice()
+  let clearedCells2 = new Set()
+
+  nextSquares = fillIn(nextSquares)
+  clearedCells2 = findAllMatches(nextSquares, scoreObject)
+
+  console.log("Fill in resulted in clearing " + (clearedCells2.size - clearedCells.size) + " cells!")
+  scoreObject.value += (clearedCells2.size - clearedCells.size)
+  
+  clearedCells = clearedCells2
+  
+  return nextSquares
+}
+
+/**
+ * Returns board immediately after all active clears disappear. (Active clears are represented by the global clearedCells object)
+ *
+ * @param {number[]} board - current state of board 
+ * @returns {number[]} board after every i in clearedCells becomes null
+ */
+export function afterClearAll(board) {
+  let nextSquares = board.slice()
+  nextSquares = clearAllMatches(nextSquares, clearedCells)
+  return nextSquares
+}
+
 
 
 /* ----------------------------------  Example Functions used to test Jest Testing  ---------------------------------- */
