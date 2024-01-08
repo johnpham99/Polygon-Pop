@@ -4,6 +4,7 @@ import { validMoveExists, validMove, inBoard } from './BoardValidation';
 import {generateValidBoard} from './BoardGeneration';
 import {cascade, fillIn, findAllMatches, clearAllMatches} from './Gameplay';
 import Timer from './Timer';
+import StartButton from './StartButton';
 
 /*
 TO-DO LIST:
@@ -25,6 +26,7 @@ let clearedCells = new Set()
 
 /**
  * State of the game.
+ * -1: inactive game (empty timer)
  * 0: no cells selected
  * 1: 1st cell selected
  * 2: active match (resulted from 2nd cell selected)
@@ -87,7 +89,6 @@ function Square({value, onSquareClick, isSelected}) {
   };
 
   return <button className="square" style={squareStyle} onClick = {onSquareClick}>
-    {/* {value} */}
   </button>
 }
 
@@ -95,11 +96,22 @@ function Score({value}) {
   return <div>Score: {value}</div>
 }
 
-export default function Board() {
+export default function Game() {
+  const initialTime = 10; // Initial time in seconds
+  const [time, setTime] = useState(initialTime);
+  
+  const resetTimer = () => {
+    setSquares(generateValidBoard(9, 9))
+    setTime(initialTime);
+    state = 0;
+  };
+
+  const changeTime = (newTime) => {
+    setTime(newTime);
+  };
 
   //Gameboard is represented by a 1D array. Currently hardcoded for 9x9.
   const [squares, setSquares] = useState(Array(81).fill(null))
-
   const [score, setScore] = useState(0)
   
   useEffect(() => {
@@ -122,8 +134,8 @@ export default function Board() {
     }
   }
 
+  // Gameplay Loop/States for Player Moves
   useEffect(() => {
-    // Your logic here
     let delayTime
     let delayedLogic
     switch(state) {
@@ -191,7 +203,7 @@ export default function Board() {
 
     // Cleanup function to clear the timeout if the component unmounts or dependencies change
     return () => clearTimeout(delayId);
-  }, [squares, scoreObject]);
+  }, [squares]);
 
   /**
    * Changes state of the game / the board after player selects second cell.
@@ -267,7 +279,8 @@ export default function Board() {
     <>
       {[0,1,2,3,4,5,6,7,8].map((row) => renderRow(row))}
       <Score value={score}/>
-      <Timer initialTime={100}/>
+      <Timer time={time} onTimerEnd={() => setState(-1)} onTimeUpdate={changeTime} />
+      <StartButton resetTimer={resetTimer} />
     </>
   );
 }

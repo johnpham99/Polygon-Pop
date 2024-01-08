@@ -1,38 +1,35 @@
-import React, { useEffect, useState } from 'react'
-import {setState} from './App'
+import React, { useEffect } from 'react';
 
-const Timer = ({initialTime}) => {
-    const [timeLeft, setTimeLeft] = useState(initialTime);
+const Timer = ({ time, onTimerEnd, onTimeUpdate }) => {
+  useEffect(() => {
+    let timer;
 
-    useEffect(() => {
-        const timer = setInterval(() => {
-          setTimeLeft((prevTimeLeft) => {
-            if (prevTimeLeft === 1) {
-              clearInterval(timer); // Stop the timer when it reaches 0
-              // You can add additional logic here when the timer reaches 0
-              setState(-1)
-            }
-            return prevTimeLeft - 1;
-          });
-        }, 1000); // Update every 1000 milliseconds (1 second)
-    
-        return () => {
+    if (time > 0) {
+      timer = setInterval(() => {
+        if (time === 1) {
           clearInterval(timer);
-        };
-      }, []); // Empty dependency array to run the effect only once on component mount
+          onTimerEnd(); // Call the callback function when the timer reaches 0
+        }
 
-    if (timeLeft === 0) {
-        setState(-1)
+        // Update the time using the callback function
+        onTimeUpdate((prevTime) => prevTime - 1);
+      }, 1000);
     }
-    // Format seconds into minutes:seconds
-    const minutes = Math.floor(timeLeft / 60);
-    const seconds = timeLeft % 60;
 
-    return (
-        <div>
-          {`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`}
-        </div>
-      );
-}
+    return () => {
+      clearInterval(timer);
+    };
+  }, [time, onTimerEnd, onTimeUpdate]);
 
-export default Timer
+  // Format seconds into minutes:seconds
+  const minutes = Math.floor(time / 60);
+  const seconds = time % 60;
+
+  return (
+    <div>
+      {`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`}
+    </div>
+  );
+};
+
+export default Timer;
