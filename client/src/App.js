@@ -36,10 +36,10 @@ let clearedCells = new Set()
  * 6: stable board (checking for valid move)
  * @type {number} 
  */
-export let state = 0
+export let gameState = 0
 
 export const setState = (newValue) => {
-  state = newValue;
+  gameState = newValue;
 };
 
 
@@ -69,7 +69,7 @@ let selectTwo = -1
  * Instance of the scoreObject is passed around different gameplay functions. 
  * @type {ScoreObject} 
  */
-const scoreObject = new ScoreObject(0)
+let scoreObject = new ScoreObject(0)
 
 
 
@@ -97,18 +97,36 @@ function Score({value}) {
 }
 
 export default function Game() {
-  const initialTime = 10; // Initial time in seconds
+  const initialTime = 60; // Initial time in seconds
   const [time, setTime] = useState(initialTime);
-  
-  const resetTimer = () => {
+
+  const resetGame = () => {
     setSquares(generateValidBoard(9, 9))
+    setScore(0);
+    scoreObject = new ScoreObject(0)
     setTime(initialTime);
-    state = 0;
+    gameState = 0
   };
 
-  const changeTime = (newTime) => {
-    setTime(newTime);
-  };
+  useEffect(() => {
+    let timer;
+
+    if (time > 0) {
+      timer = setInterval(() => {
+        if (time === 1) {
+          clearInterval(timer);
+          gameState = -1 // Call the callback function when the timer reaches 0
+        }
+
+        // Update the time using the callback function
+        setTime((time) => time - 1);
+      }, 1000);
+    }
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [time]);
 
   //Gameboard is represented by a 1D array. Currently hardcoded for 9x9.
   const [squares, setSquares] = useState(Array(81).fill(null))
@@ -122,13 +140,13 @@ export default function Game() {
   function handleClick(i) {
     let nextSquares = squares.slice()
     let selected = i;
-    if (state === 0) {
+    if (gameState === 0) {
       console.log("1st select: " + i)
       selectOne = i
       selectOneValue = squares[i]
-      state = 1
+      gameState = 1
       setSquares(nextSquares)
-    } else if (state === 1) {
+    } else if (gameState === 1) {
       nextSquares = startMove(nextSquares, selected, selectOne)
       setSquares(nextSquares) 
     }
@@ -138,7 +156,7 @@ export default function Game() {
   useEffect(() => {
     let delayTime
     let delayedLogic
-    switch(state) {
+    switch(gameState) {
       case 2:
         delayTime = 100
         delayedLogic = () => {
@@ -147,17 +165,17 @@ export default function Game() {
           selectOne = -1
           selectOneValue = -1
           selectTwo = -1
-          state = 3
+          gameState = 3
           console.log("setting score to " + scoreObject.value)
           setScore(scoreObject.value)
         };     
         break;
       case 3:
-        delayTime = 500
+        delayTime = 400
         delayedLogic = () => {
           const nextSquares = afterCascade(squares, scoreObject)
           setSquares(nextSquares)
-          state = 4
+          gameState = 4
         };  
         break;
       case 4:
@@ -166,24 +184,24 @@ export default function Game() {
           const nextSquares = afterFill(squares, scoreObject)
           setSquares(nextSquares)
           if (clearedCells.size > 0) {
-            state = 5
+            gameState = 5
           } else {
-            state = 6
+            gameState = 6
           }
         }; 
         break;
       case 5:
-        delayTime = 500
+        delayTime = 400
         delayedLogic = () => {
           const nextSquares = afterClearAll(squares)
           setSquares(nextSquares)
-          state = 3
+          gameState = 3
           console.log("setting score to " + scoreObject.value)
           setScore(scoreObject.value)
         }; 
         break;
       case 6:
-        delayTime = 500
+        delayTime = 400
         console.log("checking if there is a valid move....")
         let nextSquares = squares.slice()
         if (!validMoveExists(nextSquares, 9, 9)) {
@@ -191,7 +209,7 @@ export default function Game() {
           nextSquares = generateValidBoard(9, 9)
         }
         setSquares(nextSquares)
-        state = 0
+        gameState = 0
         console.log("setting score to " + scoreObject.value)
         setScore(scoreObject.value)
         break;
@@ -203,7 +221,7 @@ export default function Game() {
 
     // Cleanup function to clear the timeout if the component unmounts or dependencies change
     return () => clearTimeout(delayId);
-  }, [squares]);
+  }, [squares, time]);
 
   /**
    * Changes state of the game / the board after player selects second cell.
@@ -221,7 +239,7 @@ export default function Game() {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
           selectTwo = selected
-          state = 2
+          gameState = 2
         } 
         break;
       case selectOne + 1:
@@ -230,7 +248,7 @@ export default function Game() {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
           selectTwo = selected
-          state = 2
+          gameState = 2
         }
         break;
       case selectOne - 9:
@@ -239,7 +257,7 @@ export default function Game() {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
           selectTwo = selected
-          state = 2
+          gameState = 2
         }
         break;
       case selectOne + 9:
@@ -248,12 +266,12 @@ export default function Game() {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
           selectTwo = selected
-          state = 2
+          gameState = 2
         }
         break;
       case selectOne:
         console.log("2nd select: same cell pressed")
-        state = 0
+        gameState = 0
         break;
       default:
         console.log("2nd select: invalid cell")
@@ -264,7 +282,7 @@ export default function Game() {
 
   function renderSquare(i) {
     let key = "square-"+i
-    return <Square key={key} value={squares[i]} onSquareClick={() => handleClick(i)} isSelected={state === 1 && i === selectOne} />
+    return <Square key={key} value={squares[i]} onSquareClick={() => handleClick(i)} isSelected={gameState === 1 && i === selectOne} />
   }
 
   function renderRow(row) {
@@ -279,8 +297,8 @@ export default function Game() {
     <>
       {[0,1,2,3,4,5,6,7,8].map((row) => renderRow(row))}
       <Score value={score}/>
-      <Timer time={time} onTimerEnd={() => setState(-1)} onTimeUpdate={changeTime} />
-      <StartButton resetTimer={resetTimer} />
+      <Timer time={time} />
+      <StartButton resetGame={resetGame} />
     </>
   );
 }

@@ -1,13 +1,8 @@
 import React from 'react';
 
-const StartButton = ({ resetTimer }) => {
-  
-  const handleClick = () => {
-    resetTimer();
-  };
-
+const StartButton = ({ resetGame }) => {
   return (
-    <button onClick={handleClick}>
+    <button onClick={resetGame}>
       Start
     </button>
   );
