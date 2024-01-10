@@ -8,8 +8,8 @@ import StartButton from './StartButton';
 
 /*
 TO-DO LIST:
-  1. Start Button
-  2. Timer
+  1. Start Button (Inactive on page launch)
+  2. Timer (Customize time)
   3. Customize boardsize (requires code refactoring, functions initially hardcoded for 9x9)
   4. Custmize number of values
   5. Customize delay time
@@ -36,7 +36,7 @@ let clearedCells = new Set()
  * 6: stable board (checking for valid move)
  * @type {number} 
  */
-export let gameState = 0
+export let gameState = -1
 
 export const setState = (newValue) => {
   gameState = newValue;
@@ -98,7 +98,7 @@ function Score({value}) {
 
 export default function Game() {
   const initialTime = 60; // Initial time in seconds
-  const [time, setTime] = useState(initialTime);
+  const [time, setTime] = useState(0);
 
   const resetGame = () => {
     setSquares(generateValidBoard(9, 9))
