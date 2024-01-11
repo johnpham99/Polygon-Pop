@@ -4,12 +4,12 @@ const Timer = ({ time }) => {
   const minutes = Math.floor(time / 60);
   const seconds = time % 60;
 
-  let display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  let display = `${String(minutes).padStart(1, '0')}:${String(seconds).padStart(2, '0')}`
   if (isNaN(time)) display = time
 
   return (
     <div>
-      {display}
+      Timer: {display}
     </div>
   );
 };

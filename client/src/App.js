@@ -97,8 +97,8 @@ function Score({value}) {
 }
 
 export default function Game() {
-  const initialTime = 10; // Initial time in seconds
-  const [time, setTime] = useState("00:10");
+  const [initialTime, setInitialTime] = useState(60);
+  const [time, setTime] = useState("1:00");
 
   const resetGame = () => {
     setSquares(generateValidBoard(9, 9))
@@ -122,7 +122,6 @@ export default function Game() {
     let timer;
 
     if (time > 0 && gameState !== -1) {
-      console.log("time ticking")
       timer = setInterval(() => {
         if (time === 1) {
           clearInterval(timer);
@@ -151,6 +150,19 @@ export default function Game() {
     } else if (gameState === 1) {
       nextSquares = startMove(nextSquares, selected, selectOne)
       setSquares(nextSquares) 
+    }
+  }
+
+  function changeTimeLimit(value) {
+    if (gameState === -1) {
+      setTime(value)
+      setInitialTime(parseInt(value))
+      console.log("initial time:" + initialTime)
+    } else {
+      gameState = -1
+      setScore(0)
+      setTime(value)
+      setInitialTime(parseInt(value))      
     }
   }
 
@@ -298,8 +310,19 @@ export default function Game() {
   return(
     <>
       {[0,1,2,3,4,5,6,7,8].map((row) => renderRow(row))}
+      <div>
+        <label for="dropdown">Select a time limit:</label>
+        <select id="dropdown" name="dropdown" onChange={(e) => changeTimeLimit(e.target.value)} defaultValue="60">
+          <option value="30">0:30</option>
+          <option value="60">1:00</option>
+          <option value="90">1:30</option>
+          <option value="120">2:00</option>
+        </select>
+      </div>
+      <div>
+        <Timer time={time} />       
+      </div>
       <Score value={score}/>
-      <Timer time={time} />
       <StartButton resetGame={resetGame} />
     </>
   );
