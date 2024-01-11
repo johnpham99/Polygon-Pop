@@ -71,9 +71,6 @@ let selectTwo = -1
  */
 let scoreObject = new ScoreObject(0)
 
-
-
-
 function Square({value, onSquareClick, isSelected}) {
   const valueColors = {
     0: '#FFADAD',
@@ -81,6 +78,8 @@ function Square({value, onSquareClick, isSelected}) {
     2: '#FDFFB6',
     3: '#CAFFBF',
     4: '#9BF6FF',
+    5: '#BDB2FF',
+    6: '#d4a373'
   };
 
   const squareStyle = {
@@ -96,47 +95,24 @@ function Score({value}) {
   return <div>Score: {value}</div>
 }
 
+let numValues = 5 // 3-7
+
 export default function Game() {
   const [initialTime, setInitialTime] = useState(60);
   const [time, setTime] = useState("1:00");
+  const [squares, setSquares] = useState(Array(81).fill(null))     // currently hardcoded for 9x9
+  // const [numValues, setNumValues] = useState(3);
+  const [score, setScore] = useState(0)
 
+/* ----------------------------------  Functions  ---------------------------------- */
+  
   const resetGame = () => {
-    setSquares(generateValidBoard(9, 9))
+    setSquares(generateValidBoard(9, 9, numValues))
     setScore(0);
     scoreObject = new ScoreObject(0)
     setTime(initialTime);
     gameState = 0
   };
-
-  //Gameboard is represented by a 1D array. Currently hardcoded for 9x9.
-  const [squares, setSquares] = useState(Array(81).fill(null))
-  const [score, setScore] = useState(0)
-  
-  useEffect(() => {
-    console.log("page launch")
-    setSquares(generateValidBoard(9, 9))
-  }, []); 
-
-  useEffect(() => {
-    console.log("game state is currently: " + gameState)
-    let timer;
-
-    if (time > 0 && gameState !== -1) {
-      timer = setInterval(() => {
-        if (time === 1) {
-          clearInterval(timer);
-          gameState = -1 // Call the callback function when the timer reaches 0
-        }
-
-        // Update the time using the callback function
-        setTime((time) => time - 1);
-      }, 1000);
-    }
-
-    return () => {
-      clearInterval(timer);
-    };
-  }, [time]);
 
   function handleClick(i) {
     let nextSquares = squares.slice()
@@ -166,76 +142,17 @@ export default function Game() {
     }
   }
 
-  // Gameplay Loop/States for Player Moves
-  useEffect(() => {
-    let delayTime
-    let delayedLogic
-    switch(gameState) {
-      case 2:
-        delayTime = 100
-        delayedLogic = () => {
-          const nextSquares = finishMove(squares, selectOne, selectTwo, scoreObject)
-          setSquares(nextSquares)
-          selectOne = -1
-          selectOneValue = -1
-          selectTwo = -1
-          gameState = 3
-          console.log("setting score to " + scoreObject.value)
-          setScore(scoreObject.value)
-        };     
-        break;
-      case 3:
-        delayTime = 400
-        delayedLogic = () => {
-          const nextSquares = afterCascade(squares, scoreObject)
-          setSquares(nextSquares)
-          gameState = 4
-        };  
-        break;
-      case 4:
-        delayTime = 0
-        delayedLogic = () => {
-          const nextSquares = afterFill(squares, scoreObject)
-          setSquares(nextSquares)
-          if (clearedCells.size > 0) {
-            gameState = 5
-          } else {
-            gameState = 6
-          }
-        }; 
-        break;
-      case 5:
-        delayTime = 400
-        delayedLogic = () => {
-          const nextSquares = afterClearAll(squares)
-          setSquares(nextSquares)
-          gameState = 3
-          console.log("setting score to " + scoreObject.value)
-          setScore(scoreObject.value)
-        }; 
-        break;
-      case 6:
-        delayTime = 400
-        console.log("checking if there is a valid move....")
-        let nextSquares = squares.slice()
-        if (!validMoveExists(nextSquares, 9, 9)) {
-          console.log("no valid move exists!")
-          nextSquares = generateValidBoard(9, 9)
-        }
-        setSquares(nextSquares)
-        gameState = 0
-        console.log("setting score to " + scoreObject.value)
-        setScore(scoreObject.value)
-        break;
-      default:
-        break;   
+  function changeNumValues(value) {
+    if (gameState === -1) {
+      numValues = value
+    } else {
+      gameState = -1
+      numValues = value
+      setScore(0)
+      setTime(initialTime)    
     }
-
-    const delayId = setTimeout(delayedLogic, delayTime);
-
-    // Cleanup function to clear the timeout if the component unmounts or dependencies change
-    return () => clearTimeout(delayId);
-  }, [squares, time]);
+    setSquares(generateValidBoard(9, 9, numValues))    
+  }
 
   /**
    * Changes state of the game / the board after player selects second cell.
@@ -294,6 +211,104 @@ export default function Game() {
     return nextSquares
   }
 
+  useEffect(() => {
+    console.log("page launch")
+    setSquares(generateValidBoard(9, 9, numValues))
+  }, []); 
+
+  useEffect(() => {
+    console.log("game state is currently: " + gameState)
+    let timer;
+
+    if (time > 0 && gameState !== -1) {
+      timer = setInterval(() => {
+        if (time === 1) {
+          clearInterval(timer);
+          gameState = -1 // Call the callback function when the timer reaches 0
+        }
+
+        // Update the time using the callback function
+        setTime((time) => time - 1);
+      }, 1000);
+    }
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [time]);
+
+  // Gameplay Loop/States for Player Moves
+  useEffect(() => {
+    let delayTime
+    let delayedLogic
+    switch(gameState) {
+      case 2:
+        delayTime = 100
+        delayedLogic = () => {
+          const nextSquares = finishMove(squares, selectOne, selectTwo, scoreObject)
+          setSquares(nextSquares)
+          selectOne = -1
+          selectOneValue = -1
+          selectTwo = -1
+          gameState = 3
+          console.log("setting score to " + scoreObject.value)
+          setScore(scoreObject.value)
+        };     
+        break;
+      case 3:
+        delayTime = 400
+        delayedLogic = () => {
+          const nextSquares = afterCascade(squares, scoreObject)
+          setSquares(nextSquares)
+          gameState = 4
+        };  
+        break;
+      case 4:
+        delayTime = 0
+        delayedLogic = () => {
+          const nextSquares = afterFill(squares, scoreObject)
+          setSquares(nextSquares)
+          if (clearedCells.size > 0) {
+            gameState = 5
+          } else {
+            gameState = 6
+          }
+        }; 
+        break;
+      case 5:
+        delayTime = 400
+        delayedLogic = () => {
+          const nextSquares = afterClearAll(squares)
+          setSquares(nextSquares)
+          gameState = 3
+          console.log("setting score to " + scoreObject.value)
+          setScore(scoreObject.value)
+        }; 
+        break;
+      case 6:
+        delayTime = 400
+        console.log("checking if there is a valid move....")
+        let nextSquares = squares.slice()
+        if (!validMoveExists(nextSquares, 9, 9)) {
+          console.log("no valid move exists!")
+          nextSquares = generateValidBoard(9, 9, numValues)
+        }
+        setSquares(nextSquares)
+        gameState = 0
+        console.log("setting score to " + scoreObject.value)
+        setScore(scoreObject.value)
+        break;
+      default:
+        break;   
+    }
+
+    const delayId = setTimeout(delayedLogic, delayTime);
+
+    // Cleanup function to clear the timeout if the component unmounts or dependencies change
+    return () => clearTimeout(delayId);
+  }, [squares, time]);
+
+
   function renderSquare(i) {
     let key = "square-"+i
     return <Square key={key} value={squares[i]} onSquareClick={() => handleClick(i)} isSelected={gameState === 1 && i === selectOne} />
@@ -311,12 +326,23 @@ export default function Game() {
     <>
       {[0,1,2,3,4,5,6,7,8].map((row) => renderRow(row))}
       <div>
-        <label for="dropdown">Select a time limit:</label>
-        <select id="dropdown" name="dropdown" onChange={(e) => changeTimeLimit(e.target.value)} defaultValue="60">
+        <label for="timelimit">Select a time limit:</label>
+        <select id="timelimit" name="timelimit" onChange={(e) => changeTimeLimit(e.target.value)} defaultValue="60">
+          <option value="5">0:05</option>        
           <option value="30">0:30</option>
           <option value="60">1:00</option>
           <option value="90">1:30</option>
           <option value="120">2:00</option>
+        </select>
+      </div>
+      <div>
+        <label for="numvalues">Select a number of colors:</label>
+        <select id="numvalues" name="numvalues" onChange={(e) => changeNumValues(e.target.value)} defaultValue="5">
+          <option value="3">3</option>        
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
         </select>
       </div>
       <div>
@@ -443,7 +469,7 @@ export function afterFill(board, scoreObject) {
   let nextSquares = board.slice()
   let clearedCells2 = new Set()
 
-  nextSquares = fillIn(nextSquares)
+  nextSquares = fillIn(nextSquares, numValues)
   clearedCells2 = findAllMatches(nextSquares, scoreObject)
 
   console.log("Fill in resulted in clearing " + (clearedCells2.size - clearedCells.size) + " cells!")
@@ -465,39 +491,3 @@ export function afterClearAll(board) {
   nextSquares = clearAllMatches(nextSquares, clearedCells)
   return nextSquares
 }
-
-
-
-/* ----------------------------------  Example Functions used to test Jest Testing  ---------------------------------- */
-
-// export function add(a, b) {
-//   return a + b;
-// }
-
-// export function useExampleHook(initialValue) {
-//   const [value, setValue] = useState(initialValue);
-
-//   useEffect(() => {
-//     // Some side effect logic here
-//   }, [value]);
-
-//   const increment = () => {
-//     setValue(value + 1);
-//   };
-
-//   return { value, increment };
-// }
-
-// export function useExampleHook(initialValue) {
-//   const [value, setValue] = useState(initialValue);
-
-//   useEffect(() => {
-//     // Some side effect logic here
-//   }, [value]);
-
-//   const increment = () => {
-//     setValue(value + 1);
-//   };
-
-//   return { value, increment };
-// }
