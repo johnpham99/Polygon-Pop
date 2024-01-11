@@ -97,8 +97,8 @@ function Score({value}) {
 }
 
 export default function Game() {
-  const initialTime = 60; // Initial time in seconds
-  const [time, setTime] = useState(0);
+  const initialTime = 10; // Initial time in seconds
+  const [time, setTime] = useState("00:10");
 
   const resetGame = () => {
     setSquares(generateValidBoard(9, 9))
@@ -108,10 +108,21 @@ export default function Game() {
     gameState = 0
   };
 
+  //Gameboard is represented by a 1D array. Currently hardcoded for 9x9.
+  const [squares, setSquares] = useState(Array(81).fill(null))
+  const [score, setScore] = useState(0)
+  
   useEffect(() => {
+    console.log("page launch")
+    setSquares(generateValidBoard(9, 9))
+  }, []); 
+
+  useEffect(() => {
+    console.log("game state is currently: " + gameState)
     let timer;
 
-    if (time > 0) {
+    if (time > 0 && gameState !== -1) {
+      console.log("time ticking")
       timer = setInterval(() => {
         if (time === 1) {
           clearInterval(timer);
@@ -127,15 +138,6 @@ export default function Game() {
       clearInterval(timer);
     };
   }, [time]);
-
-  //Gameboard is represented by a 1D array. Currently hardcoded for 9x9.
-  const [squares, setSquares] = useState(Array(81).fill(null))
-  const [score, setScore] = useState(0)
-  
-  useEffect(() => {
-    console.log("page launch")
-    setSquares(generateValidBoard(9, 9))
-  }, []); 
 
   function handleClick(i) {
     let nextSquares = squares.slice()
