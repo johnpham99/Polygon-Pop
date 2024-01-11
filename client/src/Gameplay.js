@@ -38,13 +38,13 @@ export function cascade(board, emptyCells) {
    * @returns {number[]} Board with null-values replaced with random values.
    * @see cascade()
    */
-  export function fillIn(board) {
+  export function fillIn(board, numValues) {
     const filledBoard = board.slice()
     for (let r = 0; r < 9; r++) {
       for (let c = 0; c < 9; c++) {
         let i = r * 9 + c
         if (board[i] === null) {
-          let randomNumber = Math.floor(Math.random() * 5)
+          let randomNumber = Math.floor(Math.random() * numValues)
           filledBoard[i] = randomNumber
         }
       }

@@ -295,6 +295,42 @@ describe('Board clearing', () => {
     })
 })
 
+
+/* ----------------------------------  Example Functions used to test Jest Testing  ---------------------------------- */
+
+// export function add(a, b) {
+//   return a + b;
+// }
+
+// export function useExampleHook(initialValue) {
+//   const [value, setValue] = useState(initialValue);
+
+//   useEffect(() => {
+//     // Some side effect logic here
+//   }, [value]);
+
+//   const increment = () => {
+//     setValue(value + 1);
+//   };
+
+//   return { value, increment };
+// }
+
+// export function useExampleHook(initialValue) {
+//   const [value, setValue] = useState(initialValue);
+
+//   useEffect(() => {
+//     // Some side effect logic here
+//   }, [value]);
+
+//   const increment = () => {
+//     setValue(value + 1);
+//   };
+
+//   return { value, increment };
+// }
+
+
 /* ----------------------------------  Example Test Cases w/ Example Functions  ---------------------------------- */
 
 // test('add function adds two numbers correctly', () => {

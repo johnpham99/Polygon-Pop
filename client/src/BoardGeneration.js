@@ -9,7 +9,7 @@ import {validMoveExists} from './BoardValidation';
  * @returns {number[]} Random 1D Array of size 81 with random numbers [1-5]
  * @see generateValidBoard()
  */
-export function generateBoard(numRows, numCols) {
+export function generateBoard(numRows, numCols, numValues) {
     const board = Array(numRows * numCols).fill(null)
 
     for (let r = 0; r < numRows; r++) {
@@ -22,9 +22,9 @@ export function generateBoard(numRows, numCols) {
         if (r > 1 && board[i-numCols] === board[i-(numCols*2)]) {
             bannedValues.add(board[i-numCols])
         }
-        let randomNumber = Math.floor(Math.random() * 5);
+        let randomNumber = Math.floor(Math.random() * numValues);
         while (bannedValues.has(randomNumber)) {
-            randomNumber = Math.floor(Math.random() * 5)
+            randomNumber = Math.floor(Math.random() * numValues)
         }
         board[i] = randomNumber
         }
@@ -36,14 +36,14 @@ export function generateBoard(numRows, numCols) {
  * Generates a valid board.
  * Valid board means there is at least one move (swapping of 2 adjacent cells) that makes a match.
  * 
- * @returns {number[]} Random valid 1D Array of size numRow*numCols with random numbers [1-5]
+ * @returns {number[]} Random valid 1D Array of size numRow*numCols 
  * @see validMoveExists()
  */
-export function generateValidBoard(numRows, numCols) {
+export function generateValidBoard(numRows, numCols, numValues) {
     console.log("generating a valid board")
-    let randomBoard = generateBoard(numRows, numCols)
+    let randomBoard = generateBoard(numRows, numCols, numValues)
     while (!validMoveExists(randomBoard, numRows, numCols)) {
-        randomBoard = generateBoard(numRows, numCols)
+        randomBoard = generateBoard(numRows, numCols, numValues)
     }
     return randomBoard
 }
