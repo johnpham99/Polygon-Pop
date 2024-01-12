@@ -30,8 +30,6 @@ export function validMoveExists(board, numRows, numCols) {
  * @returns {boolean} true if given move is valid
  */
 export function validMove(i, direction, board, numCols) {
-  console.log("inside validMove")
-    console.log(numCols)
     const future = board.slice()
     const curr = future[i]
     switch (direction) {
@@ -133,7 +131,7 @@ export function validLeftMatch(i, board, numCols) {
  * @see validMove()
  */
 export function validRightMatch(i, board, numCols) {
-    if ((i + 1) % numCols === 0 || (i + 2) % numCols === 0) return false
+    if ((i + 1) % numCols === 0 || (i + 2) % numCols === 0) return false;
     return (inBoard(i+1, board) && inBoard(i+2, board) && board[i] === board[i+1] && board[i] === board[i+2])    
 }
   

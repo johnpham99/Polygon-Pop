@@ -115,21 +115,6 @@ export default function Game() {
     gameState = 0
   };
 
-  function handleClick(i) {
-    let nextSquares = squares.slice()
-    let selected = i;
-    if (gameState === 0) {
-      console.log("1st select: " + i)
-      selectOne = i
-      selectOneValue = squares[i]
-      gameState = 1
-      setSquares(nextSquares)
-    } else if (gameState === 1) {
-      nextSquares = startMove(nextSquares, selected, selectOne)
-      setSquares(nextSquares) 
-    }
-  }
-
   function changeTimeLimit(value) {
     if (gameState === -1) {
       setTime(value)
@@ -155,6 +140,21 @@ export default function Game() {
     setSquares(generateValidBoard(numRows, numCols, numValues))    
   }
 
+  function handleClick(i) {
+    let nextSquares = squares.slice()
+    let selected = i
+    if (gameState === 0) {
+      console.log("1st select: " + i)
+      selectOne = i
+      selectOneValue = squares[i]
+      gameState = 1
+      setSquares(nextSquares)
+    } else if (gameState === 1) {
+      nextSquares = startMove(nextSquares, selected, selectOne)
+      setSquares(nextSquares) 
+    }
+  }
+
   /**
    * Changes state of the game / the board after player selects second cell.
    *
@@ -164,7 +164,6 @@ export default function Game() {
    * @returns {number[]} board after swap 
    */
   function startMove(nextSquares, selected, selectOne) {
-    console.log(nextSquares.length)
     switch(selected){
       case selectOne - 1:
         console.log("2nd select: " + selected)
@@ -207,7 +206,7 @@ export default function Game() {
         gameState = 0
         break;
       default:
-        console.log("2nd select: invalid cell")
+        console.log("2nd select: invalid cell " + selected)
         return nextSquares
     }
     return nextSquares
@@ -215,11 +214,13 @@ export default function Game() {
 
 /* -------------------------------------------------------------------- */
 
+  //page launch
   useEffect(() => {
     console.log("page launch")
     setSquares(generateValidBoard(numRows, numCols, numValues))
   }, []); 
 
+  //timer
   useEffect(() => {
     console.log("game state is currently: " + gameState)
     let timer;
@@ -241,6 +242,31 @@ export default function Game() {
     };
   }, [time]);
 
+  //row and col sliders
+  useEffect(() => {
+    let rowSlider = document.getElementById("numRows");
+    let colSlider = document.getElementById("numCols");
+    let output = document.getElementById("demo");
+
+    rowSlider.oninput = function () {
+      gameState = -1 
+      rowSlider.value = this.value;
+      numRows = parseInt(this.value)
+      setSquares(generateValidBoard(numRows, numCols, numValues))
+      output.innerHTML = "Rows: " + rowSlider.value + " Cols: " + colSlider.value
+    }
+
+    colSlider.oninput = function () {
+      gameState = -1 
+      colSlider.value = this.value;
+      numCols = parseInt(this.value)
+      console.log(numCols)
+      setSquares(generateValidBoard(numRows, numCols, numValues))
+      output.innerHTML = "Rows: " + rowSlider.value + " Cols: " + colSlider.value
+    }
+  }, [squares]); 
+
+  //finish a move
   useEffect(() => {
     let delayTime
     let delayedLogic
@@ -325,31 +351,8 @@ export default function Game() {
     );
   }
 
-  useEffect(() => {
-    let rowSlider = document.getElementById("numRows");
-    let colSlider = document.getElementById("numCols");
-    let output = document.getElementById("demo");
-
-    rowSlider.oninput = function () {
-      gameState = -1 
-      rowSlider.value = this.value;
-      numRows = this.value
-      setSquares(generateValidBoard(numRows, numCols, numValues))
-      output.innerHTML = "Rows: " + rowSlider.value + " Cols: " + colSlider.value
-    }
-
-    colSlider.oninput = function () {
-      gameState = -1 
-      colSlider.value = this.value;
-      numCols = this.value
-      console.log(numCols)
-      setSquares(generateValidBoard(numRows, numCols, numValues))
-      output.innerHTML = "Rows: " + rowSlider.value + " Cols: " + colSlider.value
-    }
-  }, [squares]); 
-
   return(
-    <>
+    <div>
       {Array.from({ length: numRows }, (_, index) => index).map((row) => renderRow(row))}
       <div>
         <p id="demo">Rows: 9 Cols: 9</p>
@@ -395,7 +398,7 @@ export default function Game() {
       </div>
       <Score value={score}/>
       <StartButton resetGame={resetGame} />
-    </>
+    </div>
   );
 }
 
