@@ -11,7 +11,11 @@ export function validMoveExists(board, numRows, numCols) {
     for (let r = 0; r < numRows; r++) {
       for (let c = 0; c < numCols; c++) {
         let i = r * numCols + c
-        if (validMove(i, "R", board) || validMove(i, "D", board)) return true;
+        if (validMove(i, "R", board, numCols) || validMove(i, "D", board, numCols)) {
+          // console.log(i)
+          return true;
+        }
+
       }
     }
     return false;
@@ -25,65 +29,65 @@ export function validMoveExists(board, numRows, numCols) {
  * @param {number[]} - current state of the board
  * @returns {boolean} true if given move is valid
  */
-export function validMove(i, direction, board) {
+export function validMove(i, direction, board, numCols) {
     const future = board.slice()
     const curr = future[i]
     switch (direction) {
       case "L":
-        if (i % 9 === 0) return false
+        if (i % numCols === 0) return false
         future[i] = future[i-1]
         future[i-1] = curr
-        if (validVerticalMatch(i-1, future)) return true
-        if (validUpMatch(i-1, future)) return true
-        if (validDownMatch(i-1, future)) return true
-        if (validLeftMatch(i-1,future)) return true
+        if (validVerticalMatch(i-1, future, numCols)) return true
+        if (validUpMatch(i-1, future, numCols)) return true
+        if (validDownMatch(i-1, future, numCols)) return true
+        if (validLeftMatch(i-1,future, numCols)) return true
   
-        if (validVerticalMatch(i, future)) return true
-        if (validUpMatch(i, future)) return true
-        if (validDownMatch(i, future)) return true
-        if (validRightMatch(i,future)) return true
+        if (validVerticalMatch(i, future, numCols)) return true
+        if (validUpMatch(i, future, numCols)) return true
+        if (validDownMatch(i, future, numCols)) return true
+        if (validRightMatch(i,future, numCols)) return true
         break;
       case "R":
-        if ((i + 1) % 9 === 0) return false
+        if ((i + 1) % numCols === 0) return false
         future[i] = future[i+1]
         future[i+1] = curr
-        if (validVerticalMatch(i+1, future)) return true
-        if (validRightMatch(i+1, future)) return true
-        if (validUpMatch(i+1, future)) return true
-        if (validDownMatch(i+1, future)) return true
+        if (validVerticalMatch(i+1, future, numCols)) return true
+        if (validRightMatch(i+1, future, numCols)) return true
+        if (validUpMatch(i+1, future, numCols)) return true
+        if (validDownMatch(i+1, future, numCols)) return true
   
-        if (validVerticalMatch(i, future)) return true
-        if (validUpMatch(i, future)) return true
-        if (validDownMatch(i, future)) return true
-        if (validLeftMatch(i,future)) return true
+        if (validVerticalMatch(i, future, numCols)) return true
+        if (validUpMatch(i, future, numCols)) return true
+        if (validDownMatch(i, future, numCols)) return true
+        if (validLeftMatch(i,future, numCols)) return true
         break;
       case "U":
-        if (i < 9) return false
-        future[i] = future[i-9]
-        future[i-9] = curr
-        if (validLeftMatch(i-9, future)) return true
-        if (validRightMatch(i-9, future)) return true
-        if (validUpMatch(i-9, future)) return true
-        if (validHorizontalMatch(i-9, future)) return true
+        if (i < numCols) return false
+        future[i] = future[i-numCols]
+        future[i-numCols] = curr
+        if (validLeftMatch(i-numCols, future, numCols)) return true
+        if (validRightMatch(i-numCols, future, numCols)) return true
+        if (validUpMatch(i-numCols, future, numCols)) return true
+        if (validHorizontalMatch(i-numCols, future, numCols)) return true
   
-        if (validLeftMatch(i, future)) return true
-        if (validRightMatch(i, future)) return true
-        if (validHorizontalMatch(i, future)) return true
-        if (validDownMatch(i,future)) return true
+        if (validLeftMatch(i, future, numCols)) return true
+        if (validRightMatch(i, future, numCols)) return true
+        if (validHorizontalMatch(i, future, numCols)) return true
+        if (validDownMatch(i,future, numCols)) return true
         break;
       case "D":
-        if (i >= board.length - 9) return false
-        future[i] = future[i+9]
-        future[i+9] = curr
-        if (validLeftMatch(i+9, future)) return true
-        if (validRightMatch(i+9, future)) return true
-        if (validDownMatch(i+9, future)) return true
-        if (validHorizontalMatch(i+9, future)) return true
+        if (i >= board.length - numCols) return false
+        future[i] = future[i+numCols]
+        future[i+numCols] = curr
+        if (validLeftMatch(i+numCols, future, numCols)) return true
+        if (validRightMatch(i+numCols, future, numCols)) return true
+        if (validDownMatch(i+numCols, future, numCols)) return true
+        if (validHorizontalMatch(i+numCols, future, numCols)) return true
   
-        if (validLeftMatch(i, future)) return true
-        if (validRightMatch(i, future)) return true
-        if (validHorizontalMatch(i, future)) return true
-        if (validUpMatch(i,future)) return true
+        if (validLeftMatch(i, future, numCols)) return true
+        if (validRightMatch(i, future, numCols)) return true
+        if (validHorizontalMatch(i, future, numCols)) return true
+        if (validUpMatch(i, future, numCols)) return true
         break;
       default:
         break;
@@ -97,8 +101,8 @@ export function validMove(i, direction, board) {
  * @param {number} i - given index
  * @returns {boolean} true if index is within bounds
  */
-export function inBoard(i) {
-    return i >= 0 && i < 81
+export function inBoard(i, board) {
+    return i >= 0 && i < board.length
 }
   
 /**
@@ -111,8 +115,9 @@ export function inBoard(i) {
  * @returns {boolean} true if cell and it's 2 left neighbors are the same value
  * @see validMove()
  */
-export function validLeftMatch(i, board) {
-    return (inBoard(i-1) && inBoard(i-2) && board[i] === board[i-1] && board[i] === board[i-2])
+export function validLeftMatch(i, board, numCols) {
+    if (i % numCols === 0 || i % numCols === 1) return false
+    return (inBoard(i-1, board) && inBoard(i-2, board) && board[i] === board[i-1] && board[i] === board[i-2])
 }
   
 /**
@@ -125,8 +130,9 @@ export function validLeftMatch(i, board) {
  * @returns {boolean} true if cell and it's 2 right neighbors are the same value
  * @see validMove()
  */
-export function validRightMatch(i, board) {
-    return (inBoard(i+1) && inBoard(i+2) && board[i] === board[i+1] && board[i] === board[i+2])    
+export function validRightMatch(i, board, numCols) {
+    if ((i + 1) % numCols === 0 || (i + 2) % numCols === 0) return false;
+    return (inBoard(i+1, board) && inBoard(i+2, board) && board[i] === board[i+1] && board[i] === board[i+2])    
 }
   
 /**
@@ -137,8 +143,8 @@ export function validRightMatch(i, board) {
  * @param {number[]} board - current state of board 
  * @returns {boolean} true if cell and it's 2 above neighbors are the same value
  */
-export function validUpMatch(i, board) {
-    return (inBoard(i-9) && inBoard(i-18) && board[i] === board[i-9] && board[i] === board[i-18])     
+export function validUpMatch(i, board, numCols) {
+    return (inBoard(i-numCols, board) && inBoard(i-(numCols*2), board) && board[i] === board[i-numCols] && board[i] === board[i-(numCols*2)])     
 }
   
 /**
@@ -149,8 +155,8 @@ export function validUpMatch(i, board) {
  * @param {number[]} board - current state of board 
  * @returns {boolean} true if cell and it's 2 below neighbors are the same value
  */
-export function validDownMatch(i, board) {
-    return (inBoard(i+9) && inBoard(i+18) && board[i] === board[i+9] && board[i] === board[i+18])      
+export function validDownMatch(i, board, numCols) {
+    return (inBoard(i+numCols, board) && inBoard(i+(numCols*2), board) && board[i] === board[i+numCols] && board[i] === board[i+(numCols*2)])      
 }
   
 /**
@@ -161,8 +167,8 @@ export function validDownMatch(i, board) {
  * @param {number[]} board - current state of board 
  * @returns {boolean} true if cell and it's 2 vertical neighbors are the same value
  */
-export function validVerticalMatch(i, board) {
-    return (inBoard(i+9) && inBoard(i-9) && board[i] === board[i+9] && board[i] === board[i-9])    
+export function validVerticalMatch(i, board, numCols) {
+    return (inBoard(i+numCols, board) && inBoard(i-numCols, board) && board[i] === board[i+numCols] && board[i] === board[i-numCols])    
 }
 
   /**
@@ -175,7 +181,8 @@ export function validVerticalMatch(i, board) {
    * @returns {boolean} true if cell and it's 2 horizontal neighbors are the same value
    * @see validMove()
    */
-export function validHorizontalMatch(i, board) {
-    return (inBoard(i-1) && inBoard(i+1) && board[i] === board[i-1] && board[i] === board[i+1])    
+export function validHorizontalMatch(i, board, numCols) {
+    if (i % numCols === 0 || (i + 1) % numCols === 0) return false
+    return (inBoard(i-1, board) && inBoard(i+1, board) && board[i] === board[i-1] && board[i] === board[i+1])    
 }
   

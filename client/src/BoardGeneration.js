@@ -3,11 +3,7 @@
 import {validMoveExists} from './BoardValidation';
 
 /**
- * Generates a board (1D array of size 81) with random numbers [1-5].
  * This function makes sures that there are no matches (3 or more straight vertically/horizontally adjacent cells with the same value).
- *
- * @returns {number[]} Random 1D Array of size 81 with random numbers [1-5]
- * @see generateValidBoard()
  */
 export function generateBoard(numRows, numCols, numValues) {
     const board = Array(numRows * numCols).fill(null)
@@ -35,9 +31,6 @@ export function generateBoard(numRows, numCols, numValues) {
 /**
  * Generates a valid board.
  * Valid board means there is at least one move (swapping of 2 adjacent cells) that makes a match.
- * 
- * @returns {number[]} Random valid 1D Array of size numRow*numCols 
- * @see validMoveExists()
  */
 export function generateValidBoard(numRows, numCols, numValues) {
     console.log("generating a valid board")
