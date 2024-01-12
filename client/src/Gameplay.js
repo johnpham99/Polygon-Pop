@@ -9,21 +9,21 @@ import { clearMatch } from './App';
  * @returns {number[]} Board after cascade. Empty spaces should now be on top of non-empty spaces.
  * @see fillIn()
  */
-export function cascade(board, emptyCells) {
+export function cascade(board, emptyCells, numCols) {
     let cascadedBoard = board.slice()
     for (const index of emptyCells) {
       if (!(cascadedBoard[index] === null)) continue;
       let curr = index
-      while (inBoard(curr)) {
+      while (inBoard(curr, board)) {
         let search = curr
         while (cascadedBoard[search] === null) {
-          search -= 9
-          if (!inBoard(search)) break;
+          search -= numCols
+          if (!inBoard(search, board)) break;
         }
-        if (!inBoard(search)) break
+        if (!inBoard(search, board)) break
         cascadedBoard[curr] = cascadedBoard[search]
         cascadedBoard[search] = null
-        curr -= 9
+        curr -= numCols
       }
     }
     return cascadedBoard
@@ -38,11 +38,11 @@ export function cascade(board, emptyCells) {
    * @returns {number[]} Board with null-values replaced with random values.
    * @see cascade()
    */
-  export function fillIn(board, numValues) {
+  export function fillIn(board, numRows, numCols, numValues) {
     const filledBoard = board.slice()
-    for (let r = 0; r < 9; r++) {
-      for (let c = 0; c < 9; c++) {
-        let i = r * 9 + c
+    for (let r = 0; r < numRows; r++) {
+      for (let c = 0; c < numCols; c++) {
+        let i = r * numCols + c
         if (board[i] === null) {
           let randomNumber = Math.floor(Math.random() * numValues)
           filledBoard[i] = randomNumber
@@ -59,12 +59,12 @@ export function cascade(board, emptyCells) {
  * @returns {Set} Set that contains the indices spaces that should be null spaces.
  * @see clearAllMatches()
  */
-export function findAllMatches(board) {
+export function findAllMatches(board, numRows, numCols) {
     let clearedCells = new Set()
-    for (let r = 0; r < 9; r++) {
-      for (let c = 0; c < 9; c++) {
-        let i = r * 9 + c
-        clearMatch(i, board, clearedCells)
+    for (let r = 0; r < numRows; r++) {
+      for (let c = 0; c < numCols; c++) {
+        let i = r * numCols + c
+        clearMatch(i, board, clearedCells, numCols)
       }
     }
 

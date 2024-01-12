@@ -9,9 +9,7 @@ import StartButton from './StartButton';
 /*
 TO-DO LIST:
   1. Start Button (Inactive on page launch)
-  2. Timer (Customize time)
   3. Customize boardsize (requires code refactoring, functions initially hardcoded for 9x9)
-  4. Custmize number of values
   5. Customize delay time
   6. Customize color scheme
 */
@@ -95,21 +93,24 @@ function Score({value}) {
   return <div>Score: {value}</div>
 }
 
-let numValues = 5 // 3-7
+let numValues = 5 
+let numRows = 9 //(3-10)
+let numCols = 9 // (3-15)
 
 export default function Game() {
   const [initialTime, setInitialTime] = useState(60);
   const [time, setTime] = useState("1:00");
-  const [squares, setSquares] = useState(Array(81).fill(null))     // currently hardcoded for 9x9
+  const [squares, setSquares] = useState(Array(numRows*numCols).fill(null))   
   // const [numValues, setNumValues] = useState(3);
   const [score, setScore] = useState(0)
 
 /* ----------------------------------  Functions  ---------------------------------- */
   
   const resetGame = () => {
-    setSquares(generateValidBoard(9, 9, numValues))
+    setSquares(generateValidBoard(numRows, numCols, numValues))
     setScore(0);
     scoreObject = new ScoreObject(0)
+    setTime(0)
     setTime(initialTime);
     gameState = 0
   };
@@ -151,7 +152,7 @@ export default function Game() {
       setScore(0)
       setTime(initialTime)    
     }
-    setSquares(generateValidBoard(9, 9, numValues))    
+    setSquares(generateValidBoard(numRows, numCols, numValues))    
   }
 
   /**
@@ -163,10 +164,11 @@ export default function Game() {
    * @returns {number[]} board after swap 
    */
   function startMove(nextSquares, selected, selectOne) {
+    console.log(nextSquares.length)
     switch(selected){
       case selectOne - 1:
         console.log("2nd select: " + selected)
-        if (validMove(selectOne, "L", nextSquares)) {
+        if (validMove(selectOne, "L", nextSquares, numCols)) {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
           selectTwo = selected
@@ -175,25 +177,25 @@ export default function Game() {
         break;
       case selectOne + 1:
         console.log("2nd select: " + selected)
-        if (validMove(selectOne, "R", nextSquares)) {
+        if (validMove(selectOne, "R", nextSquares, numCols)) {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
           selectTwo = selected
           gameState = 2
         }
         break;
-      case selectOne - 9:
+      case selectOne - numCols:
         console.log("2nd select: " + selected)
-        if (validMove(selectOne, "U", nextSquares)) {
+        if (validMove(selectOne, "U", nextSquares, numCols)) {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
           selectTwo = selected
           gameState = 2
         }
         break;
-      case selectOne + 9:
+      case selectOne + numCols:
         console.log("2nd select: " + selected)
-        if (validMove(selectOne, "D", nextSquares)) {
+        if (validMove(selectOne, "D", nextSquares, numCols)) {
           nextSquares[selectOne] = nextSquares[selected]
           nextSquares[selected] = selectOneValue
           selectTwo = selected
@@ -211,9 +213,11 @@ export default function Game() {
     return nextSquares
   }
 
+/* -------------------------------------------------------------------- */
+
   useEffect(() => {
     console.log("page launch")
-    setSquares(generateValidBoard(9, 9, numValues))
+    setSquares(generateValidBoard(numRows, numCols, numValues))
   }, []); 
 
   useEffect(() => {
@@ -237,7 +241,6 @@ export default function Game() {
     };
   }, [time]);
 
-  // Gameplay Loop/States for Player Moves
   useEffect(() => {
     let delayTime
     let delayedLogic
@@ -289,9 +292,9 @@ export default function Game() {
         delayTime = 400
         console.log("checking if there is a valid move....")
         let nextSquares = squares.slice()
-        if (!validMoveExists(nextSquares, 9, 9)) {
+        if (!validMoveExists(nextSquares, numRows, numCols)) {
           console.log("no valid move exists!")
-          nextSquares = generateValidBoard(9, 9, numValues)
+          nextSquares = generateValidBoard(numRows, numCols, numValues)
         }
         setSquares(nextSquares)
         gameState = 0
@@ -317,14 +320,56 @@ export default function Game() {
   function renderRow(row) {
     return (
       <div className="board-row">
-        {[0,1,2,3,4,5,6,7,8].map((col) => renderSquare(row * 9 + col))}
+        {Array.from({ length: numCols }, (_, index) => index).map((col) => renderSquare(row * numCols + col))}
       </div>
     );
   }
 
+  useEffect(() => {
+    let rowSlider = document.getElementById("numRows");
+    let colSlider = document.getElementById("numCols");
+    let output = document.getElementById("demo");
+
+    rowSlider.oninput = function () {
+      gameState = -1 
+      rowSlider.value = this.value;
+      numRows = this.value
+      setSquares(generateValidBoard(numRows, numCols, numValues))
+      output.innerHTML = "Rows: " + rowSlider.value + " Cols: " + colSlider.value
+    }
+
+    colSlider.oninput = function () {
+      gameState = -1 
+      colSlider.value = this.value;
+      numCols = this.value
+      console.log(numCols)
+      setSquares(generateValidBoard(numRows, numCols, numValues))
+      output.innerHTML = "Rows: " + rowSlider.value + " Cols: " + colSlider.value
+    }
+  }, [squares]); 
+
   return(
     <>
-      {[0,1,2,3,4,5,6,7,8].map((row) => renderRow(row))}
+      {Array.from({ length: numRows }, (_, index) => index).map((row) => renderRow(row))}
+      <div>
+        <p id="demo">Rows: 9 Cols: 9</p>
+        <label htmlFor="numRows">Num Rows:</label>
+        <input
+          type="range"
+          id="numRows"
+          min="3"
+          max="10"
+          value={numRows}
+        />
+        <label htmlFor="numCols">Num Cols:</label>
+        <input
+          type="range"
+          id="numCols"
+          min="3"
+          max="15"
+          value={numCols}
+        />
+      </div>
       <div>
         <label for="timelimit">Select a time limit:</label>
         <select id="timelimit" name="timelimit" onChange={(e) => changeTimeLimit(e.target.value)} defaultValue="60">
@@ -365,7 +410,7 @@ export default function Game() {
  * @returns {number[]} board where matches that include index i are replaced with null
  * @see cascade()
  */
-export function clearMatch(i, board, clearedCells) { 
+export function clearMatch(i, board, clearedCells, numCols) { 
   if (board[i] === null) return
 
   if (clearedCells.has(i)) return
@@ -379,32 +424,32 @@ export function clearMatch(i, board, clearedCells) {
   let sameLeft = new Set()
   let sameRight = new Set()
 
-  while (inBoard(u) && board[u] === board[i]) {
+  while (inBoard(u, board) && board[u] === board[i]) {
     sameUp.add(u);
-    u -= 9
+    u -= numCols
   }
-  while (inBoard(d) && board[d] === board[i]) {
+  while (inBoard(d, board) && board[d] === board[i]) {
     sameDown.add(d)
-    d += 9
+    d += numCols
   }
-  while (inBoard(l) && board[l] === board[i]) {
+  while (inBoard(l, board) && board[l] === board[i]) {
     sameLeft.add(l);
-    if (l % 9 === 0) {
+    if (l % numCols === 0) {
       l -= 1
       break
     }
     l -= 1
   }
-  while (inBoard(r) && board[r] === board[i]) {
+  while (inBoard(r, board) && board[r] === board[i]) {
     sameRight.add(r)
-    if ((r + 1) % 9 === 0) {
+    if ((r + 1) % numCols === 0) {
       r += 1 
       break
     }
     r += 1
   }
 
-  if (d - u >= 36) {
+  if (d - u >= numCols * 4) {
     sameUp.forEach(value => clearedCells.add(value))
     sameDown.forEach(value => clearedCells.add(value))
     clearedCells.forEach(value => newBoard[value] = null)
@@ -432,8 +477,8 @@ export function finishMove(board, selectOne, selected, scoreObject) {
   let nextSquares = board.slice()
   clearedCells = new Set()
 
-  nextSquares = clearMatch(selectOne, nextSquares, clearedCells)
-  nextSquares = clearMatch(selected, nextSquares, clearedCells)
+  nextSquares = clearMatch(selectOne, nextSquares, clearedCells, numCols)
+  nextSquares = clearMatch(selected, nextSquares, clearedCells, numCols)
 
   console.log("Current score: " + scoreObject.value)
   console.log("You cleared " + clearedCells.size + " cells with that swap!")
@@ -451,8 +496,8 @@ export function finishMove(board, selectOne, selected, scoreObject) {
  */
 export function afterCascade(board, scoreObject) {
   let nextSquares = board.slice()
-  nextSquares = cascade(nextSquares, clearedCells)
-  clearedCells = findAllMatches(nextSquares, scoreObject)
+  nextSquares = cascade(nextSquares, clearedCells, numCols)
+  clearedCells = findAllMatches(nextSquares, numRows, numCols)
   console.log("Cascade resulted in clearing " + clearedCells.size + " cells!")
   scoreObject.value += clearedCells.size
   return nextSquares
@@ -469,8 +514,8 @@ export function afterFill(board, scoreObject) {
   let nextSquares = board.slice()
   let clearedCells2 = new Set()
 
-  nextSquares = fillIn(nextSquares, numValues)
-  clearedCells2 = findAllMatches(nextSquares, scoreObject)
+  nextSquares = fillIn(nextSquares, numRows, numCols, numValues)
+  clearedCells2 = findAllMatches(nextSquares, numRows, numCols)
 
   console.log("Fill in resulted in clearing " + (clearedCells2.size - clearedCells.size) + " cells!")
   scoreObject.value += (clearedCells2.size - clearedCells.size)
