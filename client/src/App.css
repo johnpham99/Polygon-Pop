@@ -1,0 +1,43 @@
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif; /* Choose an appropriate font */
+    background-color: #343a40; /* Set a background color for the body */
+  }
+
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Center vertically */
+    height: 100vh; /* 100% of the viewport height */
+    padding: 20px; /* Adjust padding as needed */
+  }
+  
+  .game-board {
+    display: grid;
+    grid-template-columns: repeat(var(--numCols, --numCols), 40px); /* Adjust the size as needed */
+    grid-template-rows: repeat(var(--numRows, --numRows), 40px); /* Adjust the size as needed */
+    grid-gap: 0px; /* Adjust the gap between squares as needed */
+    margin: 0 auto; /* Center horizontally */
+  }
+  
+  .square {
+    width: 75px; /* Adjust the size as needed */
+    height: 75px; /* Adjust the size as needed */
+
+    border-radius: 2px; /* Add rounded corners to squares */
+
+    background-color: #FFFFFF; /* Set a background color for the squares */
+    transition: background-color 0.2s ease; /* Add a smooth transition effect */
+    /* Add any additional styling for the squares if necessary */
+  }
+
+  .settings-container {
+    width: 100%; /* Take up the full width of the viewport */
+    margin-top: auto; /* Adjust margin as needed */
+    margin-left: auto;
+    position: sticky; /* Make the position sticky */
+    bottom: 0; /* Stick to the bottom */
+  }
+  
+  /* Add any other styling as needed */
