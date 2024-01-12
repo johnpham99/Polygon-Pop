@@ -27,7 +27,7 @@ body {
 
     border-radius: 2px; /* Add rounded corners to squares */
 
-    background-color: #FFFFFF; /* Set a background color for the squares */
+    background-color: #8cb6e6;
     transition: background-color 0.2s ease; /* Add a smooth transition effect */
     /* Add any additional styling for the squares if necessary */
   }

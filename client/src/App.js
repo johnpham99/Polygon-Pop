@@ -3,6 +3,7 @@ import ScoreObject from './Score'
 import { validMoveExists, validMove, inBoard } from './BoardValidation';
 import {generateValidBoard} from './BoardGeneration';
 import {cascade, fillIn, findAllMatches, clearAllMatches} from './Gameplay';
+import Square from './Square';
 import Timer from './Timer';
 import StartButton from './StartButton';
 import './App.css'; // Import the CSS file
@@ -10,7 +11,6 @@ import './App.css'; // Import the CSS file
 /*
 TO-DO LIST:
   1. Start Button (Inactive on page launch)
-  3. Customize boardsize (requires code refactoring, functions initially hardcoded for 9x9)
   5. Customize delay time
   6. Customize color scheme
 */
@@ -24,6 +24,18 @@ TO-DO LIST:
 let clearedCells = new Set()
 
 /**
+ * Object that holds the player's score in the game. 
+ * Later on, if there were special score scenarios (ex: chains of matches, 5+ clear gives a multiplier, etc.), can be written in the class.
+ * Instance of the scoreObject is passed around different gameplay functions. 
+ * @type {ScoreObject} 
+ */
+let scoreObject = new ScoreObject(0)
+
+function Score({value}) {
+  return <div>Score: {value}</div>
+}
+
+/**
  * State of the game.
  * -1: inactive game (empty timer)
  * 0: no cells selected
@@ -32,77 +44,22 @@ let clearedCells = new Set()
  * 3: cascading
  * 4: filling in
  * 5: active matches (resulted from cascade/fill)
- * 6: stable board (checking for valid move)
- * @type {number} 
+ * 6: stable board (checking for 1st select)
  */
-export let gameState = -1
+let gameState = -1
 
-export const setState = (newValue) => {
-  gameState = newValue;
-};
-
-
-/**
- * Index of player's first selected cell before a swap
- * @type {number} 
- */
-let selectOne = -1
-
-/**
- * Value of player's first selected cell before a swap
- * @type {number} 
- */
-let selectOneValue = -1
-
-
-/**
- * Index of player's second selected cell before a swap
- * @type {number} 
- */
-let selectTwo = -1
-
-
-/**
- * Object that holds the player's score in the game. 
- * Later on, if there were special score scenarios (ex: chains of matches, 5+ clear gives a multiplier, etc.), can be written in the class.
- * Instance of the scoreObject is passed around different gameplay functions. 
- * @type {ScoreObject} 
- */
-let scoreObject = new ScoreObject(0)
-
-function Square({value, onSquareClick, isSelected}) {
-  const valueColors = {
-    0: '#FFADAD',
-    1: '#FFD6A5',
-    2: '#FDFFB6',
-    3: '#CAFFBF',
-    4: '#9BF6FF',
-    5: '#BDB2FF',
-    6: '#d4a373'
-  };
-
-  const squareStyle = {
-    backgroundColor: valueColors[value] || 'white',
-    border: isSelected ? '3px solid black' : '1px solid black', 
-  };
-
-  return <button className="square" style={squareStyle} onClick = {onSquareClick}>
-  </button>
-}
-
-function Score({value}) {
-  return <div>Score: {value}</div>
-}
-
+let selectOne = -1 //index of player's first selected cell before a swap
+let selectOneValue = -1 //value of player's first selected cell before a swap
+let selectTwo = -1  //index of player's second selected cell before a swap
 let numValues = 5 
-let numRows = 9 //(3-10)
-let numCols = 9 // (3-15)
+let numRows = 9 
+let numCols = 9 
+let initialTime = 60
 
 export default function Game() {
-  const [initialTime, setInitialTime] = useState(60);
+  // const [initialTime, setInitialTime] = useState(60);
   const [time, setTime] = useState("1:00");
   const [squares, setSquares] = useState(Array(numRows*numCols).fill(null))   
-  // const [numValues, setNumValues] = useState(3);
   const [score, setScore] = useState(0)
 
 /* ----------------------------------  Functions  ---------------------------------- */
@@ -119,13 +76,13 @@ export default function Game() {
   function changeTimeLimit(value) {
     if (gameState === -1) {
       setTime(value)
-      setInitialTime(parseInt(value))
+      initialTime = parseInt(value)
       console.log("initial time:" + initialTime)
     } else {
       gameState = -1
       setScore(0)
       setTime(value)
-      setInitialTime(parseInt(value))      
+      initialTime = parseInt(value)     
     }
   }
 
