@@ -2,7 +2,7 @@ import React from 'react';
 
 const StartButton = ({ resetGame }) => {
   return (
-    <button onClick={resetGame}>
+    <button className="start-button" onClick={resetGame}>
       Start
     </button>
   );
