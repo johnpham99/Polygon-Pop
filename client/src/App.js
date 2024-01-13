@@ -11,8 +11,8 @@ import './App.css'; // Import the CSS file
 /*
 TO-DO LIST:
   1. Start Button (Inactive on page launch)
-  5. Customize delay time
-  6. Customize color scheme
+  2. Customize delay time
+  3. Customize color scheme
 */
 
 
