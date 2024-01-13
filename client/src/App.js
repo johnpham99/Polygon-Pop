@@ -68,7 +68,7 @@ export default function Game() {
     setSquares(generateValidBoard(numRows, numCols, numValues))
     setScore(0);
     scoreObject = new ScoreObject(0)
-    setTime(0)
+    setTime("placeholder")
     setTime(initialTime);
     gameState = 0
   };
@@ -318,7 +318,7 @@ export default function Game() {
         <div className="settings-container">
           <div>
             <p id="demo">Rows: 9 Cols: 9</p>
-            <label htmlFor="numRows">Num Rows:</label>
+            <label htmlFor="numRows">Rows:</label>
             <input
               type="range"
               id="numRows"
@@ -326,7 +326,7 @@ export default function Game() {
               max="10"
               value={numRows}
             />
-            <label htmlFor="numCols">Num Cols:</label>
+            <label htmlFor="numCols">Cols:</label>
             <input
               type="range"
               id="numCols"
@@ -355,11 +355,9 @@ export default function Game() {
               <option value="7">7</option>
             </select>
           </div>
-          <div>
-            <Timer time={time} />       
-          </div>
         </div>
         <div className="start-score">
+          <Timer time={time} />       
           <Score value={score}/>
           <StartButton resetGame={resetGame} />
         </div>
