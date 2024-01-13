@@ -8,8 +8,8 @@ const Timer = ({ time }) => {
   if (isNaN(time)) display = time
 
   return (
-    <div>
-      Timer: {display}
+    <div className="time">
+      Time: {display}
     </div>
   );
 };

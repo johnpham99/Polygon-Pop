@@ -68,9 +68,8 @@ body {
   cursor: pointer;
 }
 
-.score {
+.score, .time {
   font-size: 20px;
   color: #ffffff;
-  margin-top: 10px;
   margin-bottom: 3px;
 }
