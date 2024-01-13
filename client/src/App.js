@@ -32,7 +32,7 @@ let clearedCells = new Set()
 let scoreObject = new ScoreObject(0)
 
 function Score({value}) {
-  return <div>Score: {value}</div>
+  return <div className="score">Score: {value}</div>
 }
 
 /**
@@ -314,51 +314,55 @@ export default function Game() {
       <div className="game-board">
         {Array.from({ length: numRows }, (_, index) => index).map((row) => renderRow(row))}
       </div>
-      <div className="settings-container">
-        <div>
-          <p id="demo">Rows: 9 Cols: 9</p>
-          <label htmlFor="numRows">Num Rows:</label>
-          <input
-            type="range"
-            id="numRows"
-            min="3"
-            max="10"
-            value={numRows}
-          />
-          <label htmlFor="numCols">Num Cols:</label>
-          <input
-            type="range"
-            id="numCols"
-            min="3"
-            max="15"
-            value={numCols}
-          />
+      <div className="container">
+        <div className="settings-container">
+          <div>
+            <p id="demo">Rows: 9 Cols: 9</p>
+            <label htmlFor="numRows">Num Rows:</label>
+            <input
+              type="range"
+              id="numRows"
+              min="3"
+              max="10"
+              value={numRows}
+            />
+            <label htmlFor="numCols">Num Cols:</label>
+            <input
+              type="range"
+              id="numCols"
+              min="3"
+              max="15"
+              value={numCols}
+            />
+          </div>
+          <div>
+            <label for="timelimit">Select a time limit:</label>
+            <select id="timelimit" name="timelimit" onChange={(e) => changeTimeLimit(e.target.value)} defaultValue="60">
+              <option value="5">0:05</option>        
+              <option value="30">0:30</option>
+              <option value="60">1:00</option>
+              <option value="90">1:30</option>
+              <option value="120">2:00</option>
+            </select>
+          </div>
+          <div>
+            <label for="numvalues">Select a number of colors:</label>
+            <select id="numvalues" name="numvalues" onChange={(e) => changeNumValues(e.target.value)} defaultValue="5">
+              <option value="3">3</option>        
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+            </select>
+          </div>
+          <div>
+            <Timer time={time} />       
+          </div>
         </div>
-        <div>
-          <label for="timelimit">Select a time limit:</label>
-          <select id="timelimit" name="timelimit" onChange={(e) => changeTimeLimit(e.target.value)} defaultValue="60">
-            <option value="5">0:05</option>        
-            <option value="30">0:30</option>
-            <option value="60">1:00</option>
-            <option value="90">1:30</option>
-            <option value="120">2:00</option>
-          </select>
+        <div className="start-score">
+          <Score value={score}/>
+          <StartButton resetGame={resetGame} />
         </div>
-        <div>
-          <label for="numvalues">Select a number of colors:</label>
-          <select id="numvalues" name="numvalues" onChange={(e) => changeNumValues(e.target.value)} defaultValue="5">
-            <option value="3">3</option>        
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-          </select>
-        </div>
-        <div>
-          <Timer time={time} />       
-        </div>
-        <Score value={score}/>
-        <StartButton resetGame={resetGame} />
       </div>
     </div>
   );
