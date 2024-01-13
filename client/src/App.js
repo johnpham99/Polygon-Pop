@@ -93,7 +93,7 @@ export default function Game() {
       gameState = -1
       numValues = value
       setScore(0)
-      setTime(initialTime)    
+      setTime(""+initialTime)    
     }
     setSquares(generateValidBoard(numRows, numCols, numValues))    
   }
