@@ -298,7 +298,7 @@ export default function Game() {
 
   function renderSquare(i) {
     let key = "square-"+i
-    return <Square key={key} value={squares[i]} onSquareClick={() => handleClick(i)} isSelected={gameState === 1 && i === selectOne} />
+    return <Square key={key} value={squares[i]} onSquareClick={() => handleClick(i)} isSelected={gameState === 1 && i === selectOne} numCols={numCols} />
   }
 
   function renderRow(row) {
@@ -326,6 +326,8 @@ export default function Game() {
               max="10"
               value={numRows}
             />
+          </div>
+          <div>
             <label htmlFor="numCols">Cols:</label>
             <input
               type="range"
