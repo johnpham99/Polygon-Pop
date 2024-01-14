@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Square({value, onSquareClick, isSelected}) {
+function Square({value, onSquareClick, isSelected, numCols}) {
     const valueColors = {
       0: '#FFADAD',
       1: '#FFD6A5',
@@ -16,7 +16,7 @@ function Square({value, onSquareClick, isSelected}) {
       border: isSelected ? '3px solid black' : '1px solid black', 
     };
   
-    return <button className="square" style={squareStyle} onClick = {onSquareClick}>
+    return <button className="square" style={squareStyle} onClick = {onSquareClick} data-num-cols={numCols}>
     </button>
   }
 

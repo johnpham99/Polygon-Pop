@@ -9,17 +9,28 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center; /* Center vertically */
-    height: 100vh; /* 100% of the viewport height */
-    padding: 20px; /* Adjust padding as needed */
+    /* height: 100vh; 100% of the viewport height */
+    padding: 20px 0px 0px 0px; /* Adjust padding as needed */
+
+    position: relative;
+    padding-bottom: 0%;
   }
   
   .game-board {
     display: grid;
-    grid-template-columns: repeat(var(--numCols, --numCols), 40px); /* Adjust the size as needed */
-    grid-template-rows: repeat(var(--numRows, --numRows), 40px); /* Adjust the size as needed */
-    grid-gap: 0px; /* Adjust the gap between squares as needed */
+    grid-gap: 0px; /* Adjust the gap between rows as needed */
     margin: 0 auto; /* Center horizontally */
+    grid-auto-flow: row;
+
+    overflow: hidden;
   }
+
+  .board-row {
+    display: flex;
+    flex-direction: row;
+    width: max-content; /* Set a width to prevent wrapping */
+    margin: 0 auto;
+}
   
   .square {
     width: 75px; /* Adjust the size as needed */
@@ -32,11 +43,87 @@ body {
     /* Add any additional styling for the squares if necessary */
   }
 
+  @media (max-width: 1125px) {
+
+    [data-num-cols="15"] {
+      width: 6.7vw;
+      height: 6.7vw;
+    }
+  
+    [data-num-cols="14"] {
+      width: 7.2vw;
+      height:7.2vw;
+    }
+  
+    [data-num-cols="13"] {
+      width: 7.7vw;
+      height: 7.7vw;
+    }
+  
+    [data-num-cols="12"] {
+      width: 8.2vw;
+      height: 8.2vw;
+    }
+
+    [data-num-cols="11"] {
+      width: 8.7vw;
+      height: 8.7vw;
+    }
+
+    [data-num-cols="10"] {
+      width: 9.2vw;
+      height: 9.2vw;
+    }
+
+    [data-num-cols="9"] {
+      width: 9.7vw;
+      height: 9.7vw;
+    }
+
+    [data-num-cols="8"] {
+      width: 10.2vw;
+      height: 10.2vw;
+    }
+
+    [data-num-cols="7"] {
+      width: 10.7vw;
+      height: 10.7vw;
+    }
+
+    [data-num-cols="6"] {
+      width: 11.2vw;
+      height: 11.2vw;
+    }
+
+    [data-num-cols="5"] {
+      width: 11.7vw;
+      height: 11.7vw;
+    }
+
+    [data-num-cols="4"] {
+      width: 12.2vw;
+      height: 12.2vw;
+    }
+
+    [data-num-cols="3"] {
+      width: 12.7vw;
+      height: 12.7vw;
+    }
+
+  }
+
+  /* 15 -> 6.8vw 
+     14 -> 7.3vw
+     13 -> 7.8vw
+     12 -> 8.3vw
+  */
+  
+
 .container {
     display: flex;
     width: 100%;
 
-    margin-top: auto; /* Adjust margin as needed */
+    margin-top: 30px; /* Adjust margin as needed */
     position: sticky;
     bottom: 0;
 }
@@ -46,7 +133,7 @@ body {
     flex-direction: column;
     align-items: flex-start;
     margin-top: auto;
-    width: 50%
+    width: 47%
 }
 
 .start-score {
@@ -55,7 +142,7 @@ body {
   align-items: flex-start; /* Align items on the left side */
   justify-content: flex-start;
   margin-bottom: auto;
-  width: 50%;
+  width: 53%;
 }
 
 .start-button {
