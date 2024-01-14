@@ -2,6 +2,7 @@ body {
     margin: 0;
     font-family: 'Arial', sans-serif; /* Choose an appropriate font */
     background-color: #343a40; /* Set a background color for the body */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
   }
 
 .game-container {
