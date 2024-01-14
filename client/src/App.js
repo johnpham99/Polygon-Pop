@@ -183,11 +183,12 @@ export default function Game() {
     console.log("game state is currently: " + gameState)
     let timer;
 
-    if (time > 0 && gameState !== -1) {
+    if (time >= 0 && gameState !== -1) {
       timer = setInterval(() => {
-        if (time === 1) {
+        if (time === 0) {
           clearInterval(timer);
           gameState = -1 // Call the callback function when the timer reaches 0
+          alert("Time's up!")
         }
 
         // Update the time using the callback function
@@ -199,6 +200,10 @@ export default function Game() {
       clearInterval(timer);
     };
   }, [time]);
+
+  useEffect(() => {
+    if (time === -1) setTime(0)
+  }, [time])
 
   //row and col sliders
   useEffect(() => {
