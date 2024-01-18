@@ -10,15 +10,12 @@ import './App.css'; // Import the CSS file
 
 /*
 TO-DO LIST:
-  1. Start Button (Inactive on page launch)
-  2. Customize delay time
-  3. Customize color scheme
+
 */
 
 
 /**
  * Set of indices that represent which indicies were recently cleared.
- * @type {Set{number}} 
  * @see finishMove
  */
 let clearedCells = new Set()
@@ -27,7 +24,6 @@ let clearedCells = new Set()
  * Object that holds the player's score in the game. 
  * Later on, if there were special score scenarios (ex: chains of matches, 5+ clear gives a multiplier, etc.), can be written in the class.
  * Instance of the scoreObject is passed around different gameplay functions. 
- * @type {ScoreObject} 
  */
 let scoreObject = new ScoreObject(0)
 
@@ -36,8 +32,7 @@ function Score({value}) {
 }
 
 /**
- * State of the game.
- * -1: inactive game (empty timer)
+ * -1: inactive game (empty/paused time)
  * 0: no cells selected
  * 1: 1st cell selected
  * 2: active match (resulted from 2nd cell selected)
@@ -57,12 +52,24 @@ let numCols = 9
 let initialTime = 60
 
 export default function Game() {
-  // const [initialTime, setInitialTime] = useState(60);
   const [time, setTime] = useState("1:00");
   const [squares, setSquares] = useState(Array(numRows*numCols).fill(null))   
   const [score, setScore] = useState(0)
 
 /* ----------------------------------  Functions  ---------------------------------- */
+
+  function renderSquare(i) {
+    let key = "square-"+i
+    return <Square key={key} value={squares[i]} onSquareClick={() => handleClick(i)} isSelected={gameState === 1 && i === selectOne} numCols={numCols} />
+  }
+
+  function renderRow(row) {
+    return (
+      <div className="board-row">
+        {Array.from({ length: numCols }, (_, index) => index).map((col) => renderSquare(row * numCols + col))}
+      </div>
+    );
+  }
   
   const resetGame = () => {
     setSquares(generateValidBoard(numRows, numCols, numValues))
@@ -299,20 +306,6 @@ export default function Game() {
     // Cleanup function to clear the timeout if the component unmounts or dependencies change
     return () => clearTimeout(delayId);
   }, [squares, time]);
-
-
-  function renderSquare(i) {
-    let key = "square-"+i
-    return <Square key={key} value={squares[i]} onSquareClick={() => handleClick(i)} isSelected={gameState === 1 && i === selectOne} numCols={numCols} />
-  }
-
-  function renderRow(row) {
-    return (
-      <div className="board-row">
-        {Array.from({ length: numCols }, (_, index) => index).map((col) => renderSquare(row * numCols + col))}
-      </div>
-    );
-  }
 
   return(
     <div className="game-container">
