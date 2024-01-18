@@ -1,7 +1,7 @@
 body {
     margin: 0;
-    font-family: 'Arial', sans-serif; /* Choose an appropriate font */
-    background-color: #343a40; /* Set a background color for the body */
+    font-family: 'Arial', sans-serif; 
+    background-color: #343a40; 
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
   }
 
@@ -9,9 +9,8 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* Center vertically */
-    /* height: 100vh; 100% of the viewport height */
-    padding: 20px 0px 0px 0px; /* Adjust padding as needed */
+    justify-content: center; 
+    padding: 20px 0px 0px 0px; 
 
     position: relative;
     padding-bottom: 0%;
@@ -19,8 +18,8 @@ body {
   
   .game-board {
     display: grid;
-    grid-gap: 0px; /* Adjust the gap between rows as needed */
-    margin: 0 auto; /* Center horizontally */
+    grid-gap: 0px; 
+    margin: 0 auto; 
     grid-auto-flow: row;
 
     overflow: hidden;
@@ -29,19 +28,18 @@ body {
   .board-row {
     display: flex;
     flex-direction: row;
-    width: max-content; /* Set a width to prevent wrapping */
+    width: max-content; 
     margin: 0 auto;
 }
   
   .square {
-    width: 75px; /* Adjust the size as needed */
-    height: 75px; /* Adjust the size as needed */
+    width: 75px;
+    height: 75px; 
 
-    border-radius: 2px; /* Add rounded corners to squares */
+    border-radius: 2px; 
 
     background-color: #8cb6e6;
-    transition: background-color 0.2s ease; /* Add a smooth transition effect */
-    /* Add any additional styling for the squares if necessary */
+    transition: background-color 0.2s ease; 
   }
 
   @media (max-width: 1125px) {
@@ -113,18 +111,11 @@ body {
 
   }
 
-  /* 15 -> 6.8vw 
-     14 -> 7.3vw
-     13 -> 7.8vw
-     12 -> 8.3vw
-  */
-  
-
 .container {
     display: flex;
     width: 100%;
 
-    margin-top: 30px; /* Adjust margin as needed */
+    margin-top: 30px; 
     position: sticky;
     bottom: 0;
 }
@@ -140,7 +131,7 @@ body {
 .start-score {
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* Align items on the left side */
+  align-items: flex-start; 
   justify-content: flex-start;
   margin-bottom: auto;
   width: 53%;

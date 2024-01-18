@@ -6,8 +6,6 @@ import { clearMatch } from './App';
  *
  * @param {number[]} board - Board immediately after matches were cleared. Null spaces represent empty spaces.
  * @param {Set} emptyCells - Set that contains the indices of the null spaces. (Easier to find where to cascade)
- * @returns {number[]} Board after cascade. Empty spaces should now be on top of non-empty spaces.
- * @see fillIn()
  */
 export function cascade(board, emptyCells, numCols) {
     let cascadedBoard = board.slice()
@@ -35,8 +33,6 @@ export function cascade(board, emptyCells, numCols) {
    *  However, this could ruin the game as valid moves would be centered in one area.
    *
    * @param {number[]} board - Board immediately after cascade. Empty spaces are above non-empty spaces.
-   * @returns {number[]} Board with null-values replaced with random values.
-   * @see cascade()
    */
   export function fillIn(board, numRows, numCols, numValues) {
     const filledBoard = board.slice()
@@ -57,7 +53,6 @@ export function cascade(board, emptyCells, numCols) {
  *
  * @param {Array} board - Current state of the board. 
  * @returns {Set} Set that contains the indices spaces that should be null spaces.
- * @see clearAllMatches()
  */
 export function findAllMatches(board, numRows, numCols) {
     let clearedCells = new Set()
@@ -76,8 +71,6 @@ export function findAllMatches(board, numRows, numCols) {
  *
  * @param {number[]} board - Current state of the board. 
  * @param {Set} clearedCells - Set that contains the indices of active matches
- * @returns {number[]} Board after all active matches are replaced with null
- * @see findAllMatches()
  */
 export function clearAllMatches(board, clearedCells) {
     let clearedBoard = board.slice()
