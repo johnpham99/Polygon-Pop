@@ -10,10 +10,7 @@ import './App.css'; // Import the CSS file
 
 /*
 TO-DO LIST:
-  1. Have a way for users to change color scheme or change the icons/grid to not squares
-  2. Save High Score
-  3. Daily Seeds
-  4. Multiplayer
+
 */
 
 
@@ -103,7 +100,7 @@ export default function Game() {
       gameState = -1
       numValues = value
       setScore(0)
-      setTime(initialTime)    
+      setTime(""+initialTime)    
     }
     setSquares(generateValidBoard(numRows, numCols, numValues))    
   }
