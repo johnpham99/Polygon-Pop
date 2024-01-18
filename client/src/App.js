@@ -10,7 +10,10 @@ import './App.css'; // Import the CSS file
 
 /*
 TO-DO LIST:
-
+  1. Allow users to change color schemes/icons
+  2. Save High Score
+  3. Daily Seed
+  4. Multiplayer
 */
 
 
